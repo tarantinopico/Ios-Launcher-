@@ -30,18 +30,30 @@ jobs:
           distribution: "temurin"
           java-version: "21"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android SDK Licenses
+      - name: Configure Pre-installed Android SDK & Licenses
         run: |
-          yes | sdkmanager --licenses || true
+          SDK_DIR="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          echo "ANDROID_HOME=${SDK_DIR}" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=${SDK_DIR}" >> "$GITHUB_ENV"
 
-      - name: Prepare Keystore for APK Signing
+          mkdir -p "${SDK_DIR}/licenses"
+          printf "\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n" > "${SDK_DIR}/licenses/android-sdk-license"
+          printf "\n84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910\n" > "${SDK_DIR}/licenses/android-sdk-preview-license"
+          printf "\n601085b94cd77f0b54ff86406957099ebe79c4d6\n" > "${SDK_DIR}/licenses/android-googletv-license"
+          printf "\n33b6a2b64607f11b759f320ef9dff4ae5c47d97a\n" > "${SDK_DIR}/licenses/google-gdk-license"
+
+          SDKMANAGER_BIN=$(find "${SDK_DIR}/cmdline-tools" -name sdkmanager -type f 2>/dev/null | sort -V | tail -n 1 || true)
+          if [ -n "${SDKMANAGER_BIN}" ] && [ -x "${SDKMANAGER_BIN}" ]; then
+            yes | "${SDKMANAGER_BIN}" --sdk_root="${SDK_DIR}" --licenses >/dev/null 2>&1 || true
+          fi
+
+      - name: Prepare Keystore & Environment for APK Signing
         run: |
           if [ -f "debug.keystore.base64" ]; then
-            base64 -d debug.keystore.base64 > debug.keystore
-          elif [ ! -f "debug.keystore" ]; then
+            tr -d '\n\r ' < debug.keystore.base64 | base64 --decode > debug.keystore
+          fi
+          if [ ! -s "debug.keystore" ]; then
+            rm -f debug.keystore
             keytool -genkeypair -v \
               -keystore debug.keystore \
               -storepass android \
@@ -52,8 +64,12 @@ jobs:
               -validity 10000 \
               -dname "CN=Android Debug,O=Android,C=US"
           fi
-          if [ ! -f ".env" ] && [ -f ".env.example" ]; then
-            cp .env.example .env
+          if [ ! -f ".env" ]; then
+            if [ -f ".env.example" ]; then
+              cp .env.example .env
+            else
+              touch .env
+            fi
           fi
 
       - name: Set up Gradle 9.3.1

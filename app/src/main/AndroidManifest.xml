@@ -35,6 +35,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
 
+        <meta-data
+            android:name="android.webkit.WebView.MetricsOptOut"
+            android:value="true" />
+        <meta-data
+            android:name="android.webkit.WebView.EnableSafeBrowsing"
+            android:value="false" />
+
         <activity
             android:name="com.ioshybrid.launcher.ui.MainActivity"
             android:clearTaskOnLaunch="true"

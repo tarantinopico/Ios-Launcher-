@@ -1,6 +1,6 @@
 {
-  "summary":  "Plán kompletní stabilizace, opravy nalezených bugů (načítání vlastní tapety, chování tlačítka Home přes onNewIntent, přetahování položek ze složky a vícestránkové složky) a přidání automatizovaného GitHub Actions CI/CD workflow pro sestavení APK.",
-  "updatedAt":  "2026-10-21T10:40:38.504883312Z",
+  "summary":  "Plán opravy selhání GitHub Actions při nastavování Android SDK (odstranění zastaralé akce android-actions/setup-android@v3 volající neexistující balíček 'tools' a přímá konfigurace předinstalovaného Android SDK + licencí na ubuntu-latest).",
+  "updatedAt":  "2026-10-21T11:04:32.317698429Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

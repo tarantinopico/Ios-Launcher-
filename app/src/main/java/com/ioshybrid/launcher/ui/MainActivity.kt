@@ -85,6 +85,8 @@ class MainActivity : ComponentActivity() {
         )
         super.onCreate(savedInstanceState)
 
+        sanitizeWebViewVariationsSeed()
+
         receivers = SystemBroadcastReceiver.register(
             context = this,
             onPackagesChanged = { pkg ->
@@ -112,6 +114,23 @@ class MainActivity : ComponentActivity() {
                 onWebViewReady = { webView -> webViewRef = webView },
                 evaluateJs = { script -> evaluateJsSafely(script) }
             )
+        }
+    }
+
+    private fun sanitizeWebViewVariationsSeed() {
+        try {
+            val webViewDir = applicationContext.getDir("webview", MODE_PRIVATE)
+            listOf(
+                "variations_seed",
+                "variations_seed_new",
+                "variations_stamp"
+            ).forEach { fileName ->
+                val seedFile = java.io.File(webViewDir, fileName)
+                if (seedFile.exists()) {
+                    seedFile.delete()
+                }
+            }
+        } catch (_: Exception) {
         }
     }
 
