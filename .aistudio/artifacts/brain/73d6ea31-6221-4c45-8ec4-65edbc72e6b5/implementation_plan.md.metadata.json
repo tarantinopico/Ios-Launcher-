@@ -1,0 +1,6 @@
+{
+  "summary":  "Plán kompletní stabilizace, opravy nalezených bugů (načítání vlastní tapety, chování tlačítka Home přes onNewIntent, přetahování položek ze složky a vícestránkové složky) a přidání automatizovaného GitHub Actions CI/CD workflow pro sestavení APK.",
+  "updatedAt":  "2026-10-21T10:40:38.504883312Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

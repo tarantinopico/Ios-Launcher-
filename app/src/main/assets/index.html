@@ -1,0 +1,1252 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>iOS Hybrid Launcher Pro V3</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-icon-style="default" data-icon-shape="squircle" data-transition="slide" data-dock-style="pill" data-focus-mode="personal" data-search-bar="smart_wide">
+    <!-- Dynamický SVG filtr pro iOS 18 Tinted Icons -->
+    <svg width="0" height="0" style="position:absolute;pointer-events:none;opacity:0;" aria-hidden="true">
+        <defs>
+            <filter id="ios-tint-filter" color-interpolation-filters="sRGB">
+                <feColorMatrix id="ios-tint-matrix" type="matrix"
+                    values="0.21 0.72 0.07 0 0
+                            0.21 0.72 0.07 0 0
+                            0.21 0.72 0.07 0 0
+                            0    0    0    1 0" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- Vrstva tapety a ztmavení -->
+    <div id="wallpaper-layer" class="wallpaper-layer wallpaper-titanium-dark"></div>
+    <div id="wallpaper-dim-layer" class="wallpaper-dim-layer"></div>
+
+    <!-- Hlavní kontejner Launcheru V3 -->
+    <main id="launcher-app" class="launcher-app">
+        <!-- Horní plovoucí skleněná lišta v iOS Jiggle Modu (+ vlevo, Done vpravo) -->
+        <header id="jiggle-toolbar" class="jiggle-toolbar hidden" aria-label="Lišta úprav plochy">
+            <div class="jiggle-toolbar-left">
+                <button id="btn-jiggle-plus" class="jiggle-floating-pill jiggle-plus-pill" type="button" aria-label="Přidat prvek na plochu">
+                    <span class="jiggle-plus-glyph">+</span>
+                </button>
+                <button id="btn-add-widget" class="glass-pill-btn" type="button">
+                    <span class="pill-plus">+</span> Widget
+                </button>
+                <button id="btn-add-special-folder" class="glass-pill-btn" type="button">
+                    <span class="pill-plus">+</span> Složka
+                </button>
+                <button id="btn-add-page" class="glass-pill-btn" type="button">
+                    <span class="pill-plus">+</span> Stránka
+                </button>
+                <button id="btn-open-theme" class="glass-pill-btn" type="button">
+                    Nastavení
+                </button>
+            </div>
+            <button id="btn-exit-jiggle" class="jiggle-floating-pill jiggle-done-pill" type="button">
+                Done
+            </button>
+        </header>
+
+        <!-- Rychlé vyskakovací menu po klepnutí na + v Jiggle Modu -->
+        <div id="jiggle-add-popover" class="jiggle-add-popover acrylic-surface hidden">
+            <button id="btn-pop-add-widget" type="button" class="jiggle-pop-item">
+                <span class="jiggle-pop-icon pop-icon-blue">★</span>
+                <span>Přidat Pro Widget</span>
+            </button>
+            <button id="btn-pop-add-folder" type="button" class="jiggle-pop-item">
+                <span class="jiggle-pop-icon pop-icon-purple">📁</span>
+                <span>Nová / Speciální Složka</span>
+            </button>
+            <button id="btn-pop-add-page" type="button" class="jiggle-pop-item">
+                <span class="jiggle-pop-icon pop-icon-green">＋</span>
+                <span>Přidat Obrazovku</span>
+            </button>
+            <button id="btn-pop-open-settings" type="button" class="jiggle-pop-item">
+                <span class="jiggle-pop-icon pop-icon-orange">⚙</span>
+                <span>iOS Settings &amp; Focus</span>
+            </button>
+        </div>
+
+        <!-- Aktivní Focus indikátor (zobrazí se při režimu Work nebo Minimal DND) -->
+        <div id="focus-status-banner" class="focus-status-banner hidden">
+            <span id="focus-status-icon" class="focus-status-icon">💼</span>
+            <span id="focus-status-label">Work Focus</span>
+            <button id="btn-focus-banner-switch" type="button" class="focus-status-change-btn">Změnit</button>
+        </div>
+
+        <!-- Vodorovný 3D viewport pro domovské obrazovky -->
+        <section id="pages-viewport" class="pages-viewport" aria-label="Domovské obrazovky">
+            <div id="pages-track" class="pages-track"></div>
+        </section>
+
+        <!-- Oblast nad Dockem: Stránkovací tečky + Smart Search lišta (Smart Launcher 6.5) nebo iOS Search pilulka -->
+        <div id="pagination-bar" class="pagination-bar">
+            <div id="page-dots" class="page-dots"></div>
+
+            <!-- Kompaktní iOS Search pilulka -->
+            <button id="btn-search-pill" class="search-pill-btn acrylic-surface hidden" type="button" aria-label="Hledat aplikace a soubory">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                </svg>
+                <span>Search</span>
+            </button>
+
+            <!-- Široká Smart Launcher 6.5 Acrylic Search Bar (Výchozí ve V3) -->
+            <div id="smart-search-wide-bar" class="smart-search-wide-bar acrylic-surface" role="button" tabindex="0" aria-label="Smart search - Hledat aplikace, soubory a web">
+                <div class="smart-search-left">
+                    <svg class="smart-search-lens" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                    </svg>
+                    <span class="smart-search-placeholder">Smart search</span>
+                </div>
+                <div class="smart-search-right">
+                    <span class="smart-search-badge" title="Aplikace, soubory a web">Apps · Files</span>
+                    <button id="btn-smart-bar-settings" type="button" class="smart-search-action-btn" title="Nastavení & Focus Center" aria-label="Otevřít nastavení">
+                        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.1">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Spodní V3 iOS Acrylic Glass Dock (Vícestránkový, plně nastavitelný) -->
+        <footer id="dock-wrapper" class="dock-wrapper" aria-label="Spodní Dock">
+            <div id="ios-dock" class="ios-dock acrylic-surface">
+                <div id="ios-dock-viewport" class="ios-dock-viewport">
+                    <div id="ios-dock-track" class="ios-dock-track"></div>
+                </div>
+                <div id="dock-page-dots" class="dock-page-dots hidden"></div>
+            </div>
+        </footer>
+    </main>
+
+    <!-- Dynamické rozostření pozadí pracovní plochy ("Everything blurs when the focus is you") -->
+    <div id="workspace-backdrop-blur" class="workspace-backdrop-blur" aria-hidden="true"></div>
+
+    <!-- App Drawer V3 (4 přepínatelné layouty + Univerzální vyhledávání Aplikací, Souborů a Webu) -->
+    <section id="app-drawer" class="app-drawer hidden" aria-label="Knihovna aplikací a univerzální vyhledávání">
+        <div class="drawer-header">
+            <div class="drawer-handle-bar"></div>
+            <div class="drawer-search-box acrylic-surface">
+                <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
+                    <circle cx="11" cy="11" r="7"></circle>
+                    <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
+                </svg>
+                <input id="drawer-search-input" type="search" placeholder="Smart search: aplikace, soubory, web…" autocomplete="off" />
+                <button id="btn-clear-search" class="icon-clear-btn hidden" type="button" aria-label="Vymazat hledání">&times;</button>
+                <button id="btn-drawer-settings" class="drawer-settings-btn" type="button" title="iOS Settings &amp; Focus Center" aria-label="Nastavení Launcheru V3">
+                    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Rychlý přepínač 4 Layoutů App Draweru přímo v hlavičce -->
+            <div class="drawer-layout-bar" id="drawer-layout-switcher">
+                <button type="button" class="drawer-layout-pill active" data-drawer-layout="grid">Grid</button>
+                <button type="button" class="drawer-layout-pill" data-drawer-layout="library">iOS App Library</button>
+                <button type="button" class="drawer-layout-pill" data-drawer-layout="list">Minimalist List</button>
+                <button type="button" class="drawer-layout-pill" data-drawer-layout="paged">Horizontal Paged</button>
+            </div>
+
+            <!-- Přepínatelné filtry kategorií pro vyhledávání souborů -->
+            <div id="drawer-file-filter-bar" class="drawer-file-filter-bar hidden">
+                <button type="button" class="file-filter-chip active" data-file-cat="all">Vše</button>
+                <button type="button" class="file-filter-chip" data-file-cat="docs">Dokumenty</button>
+                <button type="button" class="file-filter-chip" data-file-cat="images">Obrázky</button>
+                <button type="button" class="file-filter-chip" data-file-cat="videos">Videa</button>
+                <button type="button" class="file-filter-chip" data-file-cat="audio">Hudba/Audio</button>
+                <button type="button" class="file-filter-chip" data-file-cat="archives">Archivy/APK</button>
+            </div>
+        </div>
+
+        <div class="drawer-body">
+            <div id="drawer-scroll-container" class="drawer-scroll-container">
+                <div id="drawer-sections" class="drawer-sections"></div>
+
+                <!-- Sekce výsledků vyhledávání souborů v telefonu + webu -->
+                <div id="drawer-files-section" class="drawer-files-section hidden">
+                    <div class="drawer-files-header">
+                        <span class="drawer-files-title">Soubory v telefonu</span>
+                        <button id="btn-grant-files-inline" type="button" class="glass-mini-btn accent-mini-btn hidden">
+                            Povolit vyhledávání souborů
+                        </button>
+                    </div>
+                    <div id="drawer-files-list" class="drawer-files-list"></div>
+                </div>
+
+                <!-- Rychlé tlačítko pro vyhledání dotazu na webu -->
+                <div id="drawer-web-search-box" class="drawer-web-search-box hidden">
+                    <button id="btn-search-web-query" type="button" class="web-search-action-card acrylic-surface">
+                        <span class="web-search-globe">🌐</span>
+                        <div class="web-search-copy">
+                            <strong id="web-search-query-title">Hledat na webu</strong>
+                            <span>Otevřít výsledky vyhledávání v prohlížeči</span>
+                        </div>
+                        <span class="web-search-arrow">›</span>
+                    </button>
+                </div>
+            </div>
+            <nav id="az-index-bar" class="az-index-bar" aria-label="Abecední index"></nav>
+        </div>
+    </section>
+
+    <!-- Rekurzivní Modal otevřené složky V3 (Složka ve složce, Widget ve složce, Breadcrumbs, Multi-page) -->
+    <div id="folder-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="folder-modal-outer">
+            <!-- Horní editovatelný nadpis složky ve stylu iOS 18 (s tlačítkem ⊗ pro vymazání) -->
+            <div class="folder-hero-title-wrap">
+                <div class="folder-title-pill-box">
+                    <input id="folder-title-input" class="folder-title-input" type="text" maxlength="28" aria-label="Název složky" />
+                    <button id="btn-clear-folder-title" class="folder-title-clear-btn" type="button" title="Vymazat název" aria-label="Vymazat název">⊗</button>
+                </div>
+                <span id="folder-kind-badge" class="folder-kind-badge">Složka</span>
+            </div>
+
+            <!-- Klikací Drobečková navigace (Breadcrumbs: Home › Práce › Nástroje) -->
+            <nav id="folder-breadcrumbs" class="folder-breadcrumbs" aria-label="Cesta ve stromu složek"></nav>
+
+            <!-- Hlavní skleněná karta složky -->
+            <div class="folder-card acrylic-surface">
+                <!-- Akční lišta pro vložení podsložky, Pro widgetu nebo aplikace přímo do této složky -->
+                <div id="folder-action-bar" class="folder-action-bar">
+                    <button id="btn-folder-add-subfolder" type="button" class="folder-action-pill">
+                        <span>+</span> Podsložka
+                    </button>
+                    <button id="btn-folder-add-widget" type="button" class="folder-action-pill">
+                        <span>+</span> Widget
+                    </button>
+                    <button id="btn-folder-add-app" type="button" class="folder-action-pill">
+                        <span>+</span> Aplikace
+                    </button>
+                    <button id="btn-folder-size-cycle" type="button" class="folder-action-pill accent-pill">
+                        1×1 / 2×2
+                    </button>
+                </div>
+
+                <!-- Vícestránkový grid položek ve složce -->
+                <div id="folder-pages-viewport" class="folder-pages-viewport">
+                    <div id="folder-grid" class="folder-grid"></div>
+                </div>
+
+                <!-- Spodní stránkovací tečky složky -->
+                <div id="folder-pagination-dots" class="folder-pagination-dots"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- iOS 18 Quick Action Context Popover (s rozostřeným pozadím a ostrým náhledem prvku) -->
+    <div id="quick-action-overlay" class="modal-backdrop quick-action-backdrop hidden" role="dialog" aria-modal="true">
+        <div id="quick-action-card" class="quick-action-card acrylic-surface">
+            <div class="quick-action-header">
+                <div id="qa-icon-wrapper" class="qa-icon-wrapper">
+                    <img id="qa-icon" class="qa-icon" src="" alt="" />
+                    <span id="qa-emoji" class="qa-emoji hidden"></span>
+                </div>
+                <div class="qa-titles">
+                    <h3 id="qa-title">Položka</h3>
+                    <span id="qa-subtitle">com.example.app</span>
+                </div>
+            </div>
+
+            <!-- Přepínač velikosti složky (1×1 Normální vs. 2×2 Enlarged Folder + 2×1 / 3×3) -->
+            <div id="qa-folder-size-box" class="qa-folder-size-box hidden">
+                <span class="qa-section-caption">Velikost složky na ploše</span>
+                <div class="qa-size-pills">
+                    <button type="button" class="qa-size-pill" data-fsize="1x1">1×1</button>
+                    <button type="button" class="qa-size-pill" data-fsize="2x1">2×1</button>
+                    <button type="button" class="qa-size-pill" data-fsize="2x2">2×2 Enlarged</button>
+                    <button type="button" class="qa-size-pill" data-fsize="3x3">3×3 Mega</button>
+                </div>
+            </div>
+
+            <div class="quick-action-list">
+                <!-- Primární akce pro Složku podle iOS specifikace -->
+                <button id="qa-btn-enlarge-toggle" class="qa-item hidden" type="button">
+                    <span id="qa-enlarge-label">Enlarge Folder (2×2)</span>
+                    <span class="qa-item-glyph">⊞</span>
+                </button>
+                <button id="qa-btn-rename-folder" class="qa-item hidden" type="button">
+                    <span>Rename Folder</span>
+                    <span class="qa-item-glyph">✎</span>
+                </button>
+                <button id="qa-btn-folder-add-child" class="qa-item hidden" type="button">
+                    <span>Add Widget / Subfolder</span>
+                    <span class="qa-item-glyph">＋</span>
+                </button>
+                <button id="qa-btn-lock-folder" class="qa-item hidden" type="button">
+                    <span id="qa-lock-folder-label">Lock Folder (PIN)</span>
+                    <span class="qa-item-glyph">🔒</span>
+                </button>
+
+                <!-- Společné a aplikační akce -->
+                <button id="qa-btn-edit" class="qa-item" type="button">
+                    <span>Edit Home Screen</span>
+                    <span class="qa-item-glyph">✦</span>
+                </button>
+                <button id="qa-btn-per-item" class="qa-item" type="button">
+                    <span>Customize Icon &amp; Label</span>
+                    <span class="qa-item-glyph">🎨</span>
+                </button>
+                <button id="qa-btn-create-folder" class="qa-item" type="button">
+                    <span>Create Folder</span>
+                    <span class="qa-item-glyph">📁</span>
+                </button>
+                <button id="qa-btn-info" class="qa-item" type="button">
+                    <span>App Info</span>
+                    <span class="qa-item-glyph">ⓘ</span>
+                </button>
+
+                <!-- Destruktivní červené akce (Remove Folder / Remove App / Uninstall) -->
+                <button id="qa-btn-remove" class="qa-item qa-warn" type="button">
+                    <span id="qa-remove-label">Remove App</span>
+                    <span class="qa-item-glyph">⊖</span>
+                </button>
+                <button id="qa-btn-uninstall" class="qa-item qa-danger" type="button">
+                    <span>Uninstall App</span>
+                    <span class="qa-item-glyph">🗑</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pro vytvoření nové / speciální složky (Standardní, Smart, PIN Vault, Souborová) -->
+    <div id="folder-creator-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="sheet-card acrylic-surface">
+            <div class="sheet-header">
+                <h3>Vytvořit složku</h3>
+                <button id="btn-close-folder-creator" class="icon-close-btn" type="button">&times;</button>
+            </div>
+
+            <div class="config-group">
+                <label class="config-label" for="new-folder-title-input">Název složky</label>
+                <input id="new-folder-title-input" class="ios-text-input" type="text" placeholder="Např. Práce, Hry, Trezor…" maxlength="26" value="Nová složka" />
+            </div>
+
+            <div class="config-group">
+                <label class="config-label">Typ složky</label>
+                <div class="segmented-control" id="new-folder-kind-control">
+                    <button type="button" class="seg-btn active" data-fkind="standard">Standardní</button>
+                    <button type="button" class="seg-btn" data-fkind="smart">Chytrá</button>
+                    <button type="button" class="seg-btn" data-fkind="vault">PIN Trezor</button>
+                    <button type="button" class="seg-btn" data-fkind="files">Souborová</button>
+                </div>
+            </div>
+
+            <div class="config-group">
+                <label class="config-label">Výchozí velikost na ploše</label>
+                <div class="segmented-control" id="new-folder-size-control">
+                    <button type="button" class="seg-btn active" data-fsize="1x1">1×1</button>
+                    <button type="button" class="seg-btn" data-fsize="2x2">2×2 Enlarged</button>
+                    <button type="button" class="seg-btn" data-fsize="2x1">2×1</button>
+                    <button type="button" class="seg-btn" data-fsize="3x3">3×3</button>
+                </div>
+            </div>
+
+            <!-- Nastavení pro Chytrou složku (Smart Folder) -->
+            <div id="smart-folder-options" class="config-group hidden">
+                <label class="config-label">Pravidlo automatického výběru aplikací</label>
+                <div class="segmented-control" id="smart-folder-rule-control">
+                    <button type="button" class="seg-btn active" data-srule="games_media">Hry &amp; Zábava</button>
+                    <button type="button" class="seg-btn" data-srule="social">Sociální sítě</button>
+                    <button type="button" class="seg-btn" data-srule="system">Systém &amp; Nástroje</button>
+                    <button type="button" class="seg-btn" data-srule="most_used">Nedávno / Časté</button>
+                </div>
+                <div id="smart-keyword-box" class="smart-keyword-box hidden">
+                    <input id="smart-folder-keyword-input" class="ios-text-input" type="text" placeholder="Zadejte klíčové slovo…" />
+                </div>
+            </div>
+
+            <!-- Nastavení pro PIN Trezor (Vault Folder) -->
+            <div id="vault-folder-options" class="config-group hidden">
+                <label class="config-label" for="vault-folder-pin-input">Čtyřmístný PIN kód trezoru</label>
+                <input id="vault-folder-pin-input" class="ios-text-input" type="password" inputmode="numeric" maxlength="4" placeholder="1234" value="1234" />
+            </div>
+
+            <!-- Nastavení pro Živou Souborovou složku (File Folder) -->
+            <div id="file-folder-options" class="config-group hidden">
+                <label class="config-label">Kategorie souborů z telefonu</label>
+                <div class="segmented-control" id="file-folder-cat-control">
+                    <button type="button" class="seg-btn active" data-fcat="all">Všechny</button>
+                    <button type="button" class="seg-btn" data-fcat="docs">Dokumenty</button>
+                    <button type="button" class="seg-btn" data-fcat="images">Obrázky</button>
+                    <button type="button" class="seg-btn" data-fcat="videos">Videa</button>
+                    <button type="button" class="seg-btn" data-fcat="audio">Audio</button>
+                </div>
+            </div>
+
+            <div class="sheet-actions-row">
+                <button id="btn-create-folder-confirm" class="primary-action-btn" type="button">Vytvořit složku</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pro výběr aplikace k přidání do otevřené složky -->
+    <div id="folder-app-picker-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="sheet-card acrylic-surface">
+            <div class="sheet-header">
+                <h3>Přidat aplikaci do složky</h3>
+                <button id="btn-close-folder-app-picker" class="icon-close-btn" type="button">&times;</button>
+            </div>
+            <input id="folder-app-picker-search" class="ios-text-input" type="search" placeholder="Filtrovat aplikace…" />
+            <div id="folder-app-picker-list" class="folder-app-picker-list"></div>
+        </div>
+    </div>
+
+    <!-- iOS Numerický PIN Dialog pro odemknutí / uzamknutí Vault složky -->
+    <div id="pin-vault-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="pin-vault-card acrylic-surface">
+            <div class="pin-vault-lock-icon">🔒</div>
+            <h3 id="pin-vault-title">Soukromý Trezor</h3>
+            <p id="pin-vault-subtitle">Zadejte 4místný PIN kód pro přístup ke složce</p>
+            <div id="pin-dots-row" class="pin-dots-row">
+                <span class="pin-dot"></span>
+                <span class="pin-dot"></span>
+                <span class="pin-dot"></span>
+                <span class="pin-dot"></span>
+            </div>
+            <div class="pin-keypad">
+                <button type="button" class="pin-key" data-digit="1">1</button>
+                <button type="button" class="pin-key" data-digit="2">2</button>
+                <button type="button" class="pin-key" data-digit="3">3</button>
+                <button type="button" class="pin-key" data-digit="4">4</button>
+                <button type="button" class="pin-key" data-digit="5">5</button>
+                <button type="button" class="pin-key" data-digit="6">6</button>
+                <button type="button" class="pin-key" data-digit="7">7</button>
+                <button type="button" class="pin-key" data-digit="8">8</button>
+                <button type="button" class="pin-key" data-digit="9">9</button>
+                <button type="button" class="pin-key pin-key-cancel" id="btn-pin-cancel">Zrušit</button>
+                <button type="button" class="pin-key" data-digit="0">0</button>
+                <button type="button" class="pin-key pin-key-back" id="btn-pin-backspace">⌫</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Per-Item Studio (Individuální úprava ikony, vlastního názvu, Emoji/symbolu, měřítka a povrchů) -->
+    <div id="per-item-editor-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="sheet-card acrylic-surface">
+            <div class="sheet-header">
+                <h3>Upravit vzhled položky</h3>
+                <button id="btn-close-per-item" class="icon-close-btn" type="button">&times;</button>
+            </div>
+
+            <div class="config-group">
+                <label class="config-label" for="per-item-label-input">Vlastní popisek (nechte prázdné pro výchozí)</label>
+                <input id="per-item-label-input" class="ios-text-input" type="text" placeholder="Vlastní název…" maxlength="28" />
+            </div>
+
+            <div class="config-group">
+                <label class="config-label" for="per-item-emoji-input">Vlastní Emoji / Symbol místo ikony (volitelné)</label>
+                <div class="emoji-Input-row">
+                    <input id="per-item-emoji-input" class="ios-text-input" type="text" placeholder="Např. 🚀, ★, 🔥, 📁…" maxlength="4" />
+                    <div class="emoji-quick-picks" id="per-item-emoji-picks">
+                        <button type="button" class="emoji-chip" data-emoji="">Výchozí</button>
+                        <button type="button" class="emoji-chip" data-emoji="🚀">🚀</button>
+                        <button type="button" class="emoji-chip" data-emoji="⚡">⚡</button>
+                        <button type="button" class="emoji-chip" data-emoji="🎯">🎯</button>
+                        <button type="button" class="emoji-chip" data-emoji="💼">💼</button>
+                        <button type="button" class="emoji-chip" data-emoji="🎮">🎮</button>
+                        <button type="button" class="emoji-chip" data-emoji="🔒">🔒</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="config-group">
+                <div class="slider-header">
+                    <label class="config-label" for="per-item-scale-slider">Individuální velikost položky</label>
+                    <span id="per-item-scale-value" class="slider-value">100%</span>
+                </div>
+                <input id="per-item-scale-slider" class="ios-slider" type="range" min="80" max="140" value="100" />
+            </div>
+
+            <div class="config-group">
+                <label class="config-label">Barva pozadí dlaždice</label>
+                <div id="per-item-bg-swatches" class="color-swatch-row">
+                    <button type="button" class="color-swatch active" data-color="" style="background: rgba(255,255,255,0.1);"></button>
+                    <button type="button" class="color-swatch" data-color="#0B0F19" style="background:#0B0F19;"></button>
+                    <button type="button" class="color-swatch" data-color="#142238" style="background:#142238;"></button>
+                    <button type="button" class="color-swatch" data-color="#221538" style="background:#221538;"></button>
+                    <button type="button" class="color-swatch" data-color="#0F2922" style="background:#0F2922;"></button>
+                    <button type="button" class="color-swatch" data-color="#33161C" style="background:#33161C;"></button>
+                </div>
+            </div>
+
+            <div class="config-group">
+                <label class="config-label">Barva okraje / akcentu</label>
+                <div id="per-item-border-swatches" class="color-swatch-row">
+                    <button type="button" class="color-swatch active" data-color="" style="background: rgba(255,255,255,0.2);"></button>
+                    <button type="button" class="color-swatch" data-color="#0A84FF" style="background:#0A84FF;"></button>
+                    <button type="button" class="color-swatch" data-color="#BF5AF2" style="background:#BF5AF2;"></button>
+                    <button type="button" class="color-swatch" data-color="#30D158" style="background:#30D158;"></button>
+                    <button type="button" class="color-swatch" data-color="#FF9F0A" style="background:#FF9F0A;"></button>
+                    <button type="button" class="color-swatch" data-color="#FF375F" style="background:#FF375F;"></button>
+                </div>
+            </div>
+
+            <div class="toggle-row">
+                <div class="toggle-text">
+                    <span class="toggle-title">Skrýt popisek u této položky</span>
+                    <span class="toggle-desc">Skryje textový název pod touto konkrétní ikonou či složkou</span>
+                </div>
+                <input id="per-item-hide-label" type="checkbox" class="ios-switch" />
+            </div>
+
+            <div class="sheet-actions-row">
+                <button id="btn-reset-per-item" class="secondary-action-btn" type="button">Resetovat vzhled</button>
+                <button id="btn-save-per-item" class="primary-action-btn" type="button">Uložit úpravy</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Katalog Pro Widget Suite V3 (iOS 17 + Smart Launcher 6.5 Acrylic Glass Widgets) -->
+    <div id="widget-picker-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="sheet-card acrylic-surface widget-catalog-card">
+            <div class="sheet-header">
+                <div>
+                    <h3>Pro Widget Suite V3</h3>
+                    <p class="sheet-subtitle" id="widget-picker-target-hint">Klepnutím vložíte skleněný widget na plochu nebo do složky</p>
+                </div>
+                <button id="btn-close-widget-picker" class="icon-close-btn" type="button">&times;</button>
+            </div>
+
+            <div class="widget-picker-scroll">
+                <div class="widget-picker-grid">
+                    <!-- 1. Acrylic Weather & Environment -->
+                    <button class="widget-preview-card" data-widget-type="weather" data-col-span="2" data-row-span="2" type="button">
+                        <div class="wp-visual wp-weather-preview">
+                            <span class="wp-weather-temp">21°</span>
+                            <span class="wp-weather-sub">☀ Praha · H:24° L:13°</span>
+                        </div>
+                        <span class="wp-name">Acrylic Počasí (2×2)</span>
+                    </button>
+
+                    <button class="widget-preview-card" data-widget-type="weather" data-col-span="4" data-row-span="2" type="button">
+                        <div class="wp-visual wp-weather-preview">
+                            <span class="wp-weather-temp">21° Praha</span>
+                            <span class="wp-weather-sub">Mostly Clear · Předpověď 4×2</span>
+                        </div>
+                        <span class="wp-name">Acrylic Počasí Pro (4×2)</span>
+                    </button>
+
+                    <!-- 2. iOS 17 Calendar & Agenda Glass -->
+                    <button class="widget-preview-card" data-widget-type="calendar" data-col-span="2" data-row-span="2" type="button">
+                        <div class="wp-visual wp-calendar-preview">
+                            <span class="wp-cal-month">ŘÍJEN</span>
+                            <span class="wp-cal-day">21</span>
+                        </div>
+                        <span class="wp-name">iOS 17 Kalendář (2×2)</span>
+                    </button>
+
+                    <button class="widget-preview-card" data-widget-type="calendar" data-col-span="4" data-row-span="2" type="button">
+                        <div class="wp-visual wp-calendar-preview">
+                            <span class="wp-cal-month">KALENDÁŘ &amp; AGENDA</span>
+                            <span class="wp-cal-sub">Měsíc + dnešní události (4×2)</span>
+                        </div>
+                        <span class="wp-name">Kalendář &amp; Agenda (4×2)</span>
+                    </button>
+
+                    <!-- 3. Pro Clock & World Time -->
+                    <button class="widget-preview-card" data-widget-type="clock" data-col-span="2" data-row-span="2" data-clock-style="analog" type="button">
+                        <div class="wp-visual wp-clock-preview">
+                            <span class="wp-clock-time">⌚</span>
+                            <span class="wp-clock-date">SVG Analog Watchface</span>
+                        </div>
+                        <span class="wp-name">Analog Watchface (2×2)</span>
+                    </button>
+
+                    <button class="widget-preview-card" data-widget-type="clock" data-col-span="4" data-row-span="2" data-clock-style="world" type="button">
+                        <div class="wp-visual wp-clock-preview">
+                            <span class="wp-clock-time">NY · LON · TYO · PRG</span>
+                            <span class="wp-clock-date">Světový čas 4 metropolí</span>
+                        </div>
+                        <span class="wp-name">World Clock (4×2)</span>
+                    </button>
+
+                    <!-- 4. Battery & System Activity Rings -->
+                    <button class="widget-preview-card" data-widget-type="rings" data-col-span="2" data-row-span="2" type="button">
+                        <div class="wp-visual wp-rings-preview">
+                            <span class="wp-rings-glyph">◎</span>
+                            <span class="wp-battery-sub">Baterie · RAM · Úložiště</span>
+                        </div>
+                        <span class="wp-name">Activity Rings (2×2)</span>
+                    </button>
+
+                    <button class="widget-preview-card" data-widget-type="rings" data-col-span="4" data-row-span="2" type="button">
+                        <div class="wp-visual wp-rings-preview">
+                            <span class="wp-rings-glyph">◎ 92% · 3.8 GB</span>
+                            <span class="wp-battery-sub">Kroužky + Telemetrie (4×2)</span>
+                        </div>
+                        <span class="wp-name">System Rings Pro (4×2)</span>
+                    </button>
+
+                    <!-- 5. Glass Music / Media Controller -->
+                    <button class="widget-preview-card" data-widget-type="media" data-col-span="2" data-row-span="2" type="button">
+                        <div class="wp-visual wp-media-preview">
+                            <span class="wp-media-icons">⏮ ⏯ ⏭</span>
+                            <span class="wp-battery-sub">Ovladač médií (2×2)</span>
+                        </div>
+                        <span class="wp-name">Glass Media (2×2)</span>
+                    </button>
+
+                    <button class="widget-preview-card" data-widget-type="media" data-col-span="4" data-row-span="2" type="button">
+                        <div class="wp-visual wp-media-preview">
+                            <span class="wp-media-icons">🎵 Now Playing</span>
+                            <span class="wp-battery-sub">Široký přehrávač s obalem (4×2)</span>
+                        </div>
+                        <span class="wp-name">Glass Media Pro (4×2)</span>
+                    </button>
+
+                    <!-- Klasické kompaktní widgety -->
+                    <button class="widget-preview-card" data-widget-type="clock" data-col-span="2" data-row-span="2" data-clock-style="digital" type="button">
+                        <div class="wp-visual wp-clock-preview">
+                            <span class="wp-clock-time">09:41</span>
+                            <span class="wp-clock-date">Smart Digital Glass</span>
+                        </div>
+                        <span class="wp-name">Smart Digital (2×2)</span>
+                    </button>
+
+                    <button class="widget-preview-card" data-widget-type="battery" data-col-span="1" data-row-span="1" type="button">
+                        <div class="wp-visual wp-battery-preview">
+                            <span class="wp-battery-pct">92%</span>
+                            <span class="wp-battery-sub">Mini 1×1</span>
+                        </div>
+                        <span class="wp-name">Mini Baterie (1×1)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Per-Widget Customization Studio V3 (Velikost, styl, město počasí, události kalendáře, barva a průhlednost) -->
+    <div id="widget-config-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="sheet-card acrylic-surface">
+            <div class="sheet-header">
+                <h3 id="widget-config-title">Upravit Pro Widget</h3>
+                <button id="btn-close-widget-config" class="icon-close-btn" type="button">&times;</button>
+            </div>
+
+            <div class="config-group">
+                <label class="config-label">Velikost widgetu</label>
+                <div class="segmented-control" id="widget-size-control">
+                    <button type="button" class="seg-btn" data-size="1x1">1×1</button>
+                    <button type="button" class="seg-btn active" data-size="2x2">2×2</button>
+                    <button type="button" class="seg-btn" data-size="4x2">4×2 Široký</button>
+                </div>
+            </div>
+
+            <!-- Styl hodin (pouze pro widget Hodin) -->
+            <div class="config-group" id="widget-style-group">
+                <label class="config-label">Vzhled ciferníku / zobrazení</label>
+                <div class="segmented-control" id="widget-style-control">
+                    <button type="button" class="seg-btn active" data-style="digital">Smart Digital</button>
+                    <button type="button" class="seg-btn" data-style="analog">SVG Analog</button>
+                    <button type="button" class="seg-btn" data-style="world">World Clock</button>
+                    <button type="button" class="seg-btn" data-style="minimal">Minimal</button>
+                </div>
+            </div>
+
+            <!-- Nastavení lokality a jednotek pro Acrylic Weather Widget -->
+            <div class="config-group hidden" id="widget-weather-group">
+                <label class="config-label" for="widget-weather-city-input">Město / Lokalita počasí</label>
+                <div class="weather-config-row">
+                    <input id="widget-weather-city-input" class="ios-text-input" type="text" placeholder="Praha, Brno, London…" maxlength="28" value="Praha" />
+                    <div class="segmented-control weather-unit-seg" id="widget-weather-unit-control">
+                        <button type="button" class="seg-btn active" data-unit="C">°C</button>
+                        <button type="button" class="seg-btn" data-unit="F">°F</button>
+                    </div>
+                </div>
+                <div class="segmented-control" id="widget-weather-cond-control" style="margin-top:8px;">
+                    <button type="button" class="seg-btn active" data-cond="partly_cloudy">Polojasno</button>
+                    <button type="button" class="seg-btn" data-cond="sunny">Slunečno</button>
+                    <button type="button" class="seg-btn" data-cond="rain">Déšť</button>
+                    <button type="button" class="seg-btn" data-cond="storm">Bouřka</button>
+                </div>
+            </div>
+
+            <!-- Správa událostí a poznámek pro iOS 17 Calendar & Agenda Widget -->
+            <div class="config-group hidden" id="widget-calendar-group">
+                <label class="config-label">Dnešní události a úkoly v Agendě</label>
+                <div id="widget-agenda-list" class="widget-agenda-editor-list"></div>
+                <div class="agenda-add-row">
+                    <input id="agenda-new-title-input" class="ios-text-input" type="text" placeholder="Nová událost / poznámka…" maxlength="36" />
+                    <input id="agenda-new-time-input" class="ios-text-input agenda-time-input" type="text" placeholder="14:30" maxlength="10" value="14:00" />
+                    <button id="btn-add-agenda-item" type="button" class="glass-mini-btn accent-mini-btn">+ Přidat</button>
+                </div>
+            </div>
+
+            <div class="config-group">
+                <label class="config-label">Skleněný povrch widgetu</label>
+                <div class="color-swatch-row" id="widget-bg-swatches">
+                    <button type="button" class="color-swatch active" data-color="#101520" style="background:#101520;"></button>
+                    <button type="button" class="color-swatch" data-color="#1B2436" style="background:#1B2436;"></button>
+                    <button type="button" class="color-swatch" data-color="#1D162B" style="background:#1D162B;"></button>
+                    <button type="button" class="color-swatch" data-color="#0F2622" style="background:#0F2622;"></button>
+                    <button type="button" class="color-swatch" data-color="#2B1419" style="background:#2B1419;"></button>
+                </div>
+            </div>
+
+            <div class="config-group">
+                <label class="config-label">Barva akcentu widgetu</label>
+                <div class="color-swatch-row" id="widget-accent-swatches">
+                    <button type="button" class="color-swatch active" data-color="#0A84FF" style="background:#0A84FF;"></button>
+                    <button type="button" class="color-swatch" data-color="#30D158" style="background:#30D158;"></button>
+                    <button type="button" class="color-swatch" data-color="#BF5AF2" style="background:#BF5AF2;"></button>
+                    <button type="button" class="color-swatch" data-color="#FF9F0A" style="background:#FF9F0A;"></button>
+                    <button type="button" class="color-swatch" data-color="#FF375F" style="background:#FF375F;"></button>
+                    <button type="button" class="color-swatch" data-color="#64D2FF" style="background:#64D2FF;"></button>
+                </div>
+            </div>
+
+            <div class="config-group">
+                <div class="slider-header">
+                    <label class="config-label" for="widget-opacity-slider">Neprůhlednost akrylátového skla</label>
+                    <span id="widget-opacity-value" class="slider-value">68%</span>
+                </div>
+                <input id="widget-opacity-slider" class="ios-slider" type="range" min="20" max="95" value="68" />
+            </div>
+
+            <button id="btn-save-widget-config" class="primary-action-btn" type="button">Hotovo</button>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         PROFESIONÁLNÍ iOS 18 DARK MODE SETTINGS & FOCUS CENTER (Čisté OLED #000000)
+         ========================================================================= -->
+    <div id="customization-sheet" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+        <div class="ios-settings-sheet">
+            <!-- Horní iOS navigační lišta s modrými tlačítky Cancel / Done -->
+            <header class="ios-settings-navbar">
+                <button id="btn-cancel-customization" class="ios-nav-btn" type="button">Cancel</button>
+                <h2 class="ios-nav-title">Settings &amp; Focus</h2>
+                <button id="btn-close-customization" class="ios-nav-btn ios-nav-done" type="button">Done</button>
+            </header>
+
+            <div class="ios-settings-scroll">
+                <!-- 1. BENTO FOCUS MODES (Personal / Work / Minimal DND) -->
+                <div class="ios-section-label">FOCUS CENTER — REŽIMY SOUSTŘEDĚNÍ</div>
+                <div class="focus-bento-grid" id="focus-bento-grid">
+                    <button type="button" class="focus-bento-card active" data-focus="personal">
+                        <div class="focus-bento-top">
+                            <span class="focus-bento-icon squircle-blue">👤</span>
+                            <span class="focus-bento-status">Active</span>
+                        </div>
+                        <div class="focus-bento-copy">
+                            <strong>Personal</strong>
+                            <span>Všechny obrazovky &amp; odznaky</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="focus-bento-card" data-focus="work">
+                        <div class="focus-bento-top">
+                            <span class="focus-bento-icon squircle-purple">💼</span>
+                            <span class="focus-bento-status">Off</span>
+                        </div>
+                        <div class="focus-bento-copy">
+                            <strong>Work Focus</strong>
+                            <span>Produktivita &amp; Pro Widgety</span>
+                        </div>
+                    </button>
+
+                    <button type="button" class="focus-bento-card focus-bento-wide" data-focus="minimal">
+                        <div class="focus-bento-top">
+                            <span class="focus-bento-icon squircle-indigo">🌙</span>
+                            <span class="focus-bento-status">Off</span>
+                        </div>
+                        <div class="focus-bento-copy">
+                            <strong>Minimal / Do Not Disturb</strong>
+                            <span>Ztlumené notifikační odznaky a čistá hlavní obrazovka bez rušivých prvků</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- 2. SMART SEARCH & VYHLEDÁVACÍ LIŠTA NAD DOCKEM -->
+                <div class="ios-section-label">VYHLEDÁVACÍ LIŠTA &amp; UNIVERZÁLNÍ HLEDÁNÍ</div>
+                <div class="ios-grouped-card">
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-blue">🔍</span>
+                                <span class="ios-cell-title">Styl lišty nad Dockem</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="search-bar-style-control">
+                            <button type="button" class="seg-btn active" data-sbar="smart_wide">Smart Search</button>
+                            <button type="button" class="seg-btn" data-sbar="ios_pill">iOS Search Pill</button>
+                            <button type="button" class="seg-btn" data-sbar="dots_only">Jen tečky</button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell">
+                        <div class="ios-cell-left">
+                            <span class="ios-squircle-icon squircle-green">📂</span>
+                            <div class="ios-cell-text">
+                                <span class="ios-cell-title">Vyhledávat soubory v telefonu</span>
+                                <span class="ios-cell-subtitle">Prohledávat MediaStore z App Draweru</span>
+                            </div>
+                        </div>
+                        <input id="toggle-search-files" type="checkbox" class="ios-switch" checked />
+                    </div>
+
+                    <div class="ios-cell">
+                        <div class="ios-cell-left">
+                            <span class="ios-squircle-icon squircle-orange">🔐</span>
+                            <div class="ios-cell-text">
+                                <span class="ios-cell-title">Oprávnění k souborům a médiím</span>
+                                <span id="file-permission-status-text" class="ios-cell-subtitle">Stav přístupu k úložišti</span>
+                            </div>
+                        </div>
+                        <button id="btn-request-file-perm" class="ios-chevron-btn" type="button">Povolit ›</button>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-cyan">🗂</span>
+                                <span class="ios-cell-title">Kategorie hledaných souborů</span>
+                            </div>
+                        </div>
+                        <div class="file-cat-checks-grid">
+                            <label class="ios-check-pill"><input type="checkbox" id="chk-cat-docs" checked /> <span>Dokumenty</span></label>
+                            <label class="ios-check-pill"><input type="checkbox" id="chk-cat-images" checked /> <span>Obrázky</span></label>
+                            <label class="ios-check-pill"><input type="checkbox" id="chk-cat-videos" checked /> <span>Videa</span></label>
+                            <label class="ios-check-pill"><input type="checkbox" id="chk-cat-audio" checked /> <span>Audio</span></label>
+                            <label class="ios-check-pill"><input type="checkbox" id="chk-cat-archives" checked /> <span>Archivy &amp; APK</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. TAPETA, ACRYLIC GLASSMORPHISM & IKONY -->
+                <div class="ios-section-label">WALLPAPER &amp; ACRYLIC GLASSMORPHISM</div>
+                <div class="ios-grouped-card">
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-pink">🖼</span>
+                                <span class="ios-cell-title">Dynamická tapeta iOS 18</span>
+                            </div>
+                            <button id="btn-pick-custom-wallpaper" class="ios-inline-link-btn" type="button">Vlastní z galerie ›</button>
+                        </div>
+                        <div class="wallpaper-presets-grid" id="wallpaper-presets">
+                            <button type="button" class="wp-preset-item active" data-wp="titanium-dark">
+                                <span class="wp-thumb wallpaper-titanium-dark"></span>
+                                <span class="wp-label">Titanium Dark</span>
+                            </button>
+                            <button type="button" class="wp-preset-item" data-wp="midnight-aurora">
+                                <span class="wp-thumb wallpaper-midnight-aurora"></span>
+                                <span class="wp-label">Aurora</span>
+                            </button>
+                            <button type="button" class="wp-preset-item" data-wp="deep-ocean">
+                                <span class="wp-thumb wallpaper-deep-ocean"></span>
+                                <span class="wp-label">Deep Ocean</span>
+                            </button>
+                            <button type="button" class="wp-preset-item" data-wp="cyberpunk-neon">
+                                <span class="wp-thumb wallpaper-cyberpunk-neon"></span>
+                                <span class="wp-label">Neon</span>
+                            </button>
+                            <button type="button" class="wp-preset-item" data-wp="crimson-dusk">
+                                <span class="wp-thumb wallpaper-crimson-dusk"></span>
+                                <span class="wp-label">Crimson</span>
+                            </button>
+                            <button type="button" class="wp-preset-item" data-wp="emerald-glass">
+                                <span class="wp-thumb wallpaper-emerald-glass"></span>
+                                <span class="wp-label">Emerald</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-purple">✨</span>
+                                <span class="ios-cell-title">Mód ikon a barva akcentu</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="icon-style-control">
+                            <button type="button" class="seg-btn active" data-icon-style="default">Default</button>
+                            <button type="button" class="seg-btn" data-icon-style="dark">iOS Dark</button>
+                            <button type="button" class="seg-btn" data-icon-style="tinted">Tinted</button>
+                        </div>
+                        <div class="color-swatch-row" id="theme-accent-swatches" style="margin-top:8px;">
+                            <button type="button" class="color-swatch active" data-color="#0A84FF" style="background:#0A84FF;"></button>
+                            <button type="button" class="color-swatch" data-color="#5E5CE6" style="background:#5E5CE6;"></button>
+                            <button type="button" class="color-swatch" data-color="#BF5AF2" style="background:#BF5AF2;"></button>
+                            <button type="button" class="color-swatch" data-color="#FF375F" style="background:#FF375F;"></button>
+                            <button type="button" class="color-swatch" data-color="#FF9F0A" style="background:#FF9F0A;"></button>
+                            <button type="button" class="color-swatch" data-color="#30D158" style="background:#30D158;"></button>
+                            <button type="button" class="color-swatch" data-color="#64D2FF" style="background:#64D2FF;"></button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-cyan">💧</span>
+                                <span class="ios-cell-title">Acrylic Glass Blur</span>
+                            </div>
+                            <span id="blur-slider-value" class="slider-value">28px</span>
+                        </div>
+                        <div class="ios-slider-with-icons">
+                            <span class="slider-end-icon">○</span>
+                            <input id="blur-slider" class="ios-slider" type="range" min="6" max="48" value="28" />
+                            <span class="slider-end-icon">●</span>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-indigo">◐</span>
+                                <span class="ios-cell-title">Neprůhlednost skla &amp; Ztmavení tapety</span>
+                            </div>
+                            <span id="glass-slider-value" class="slider-value">62%</span>
+                        </div>
+                        <div class="ios-slider-with-icons">
+                            <span class="slider-end-icon">☀</span>
+                            <input id="glass-slider" class="ios-slider" type="range" min="25" max="90" value="62" />
+                            <span class="slider-end-icon">🌙</span>
+                        </div>
+                        <div class="slider-header" style="margin-top:6px;">
+                            <span class="ios-cell-subtitle">Ztmavení tapety</span>
+                            <span id="dim-slider-value" class="slider-value">15%</span>
+                        </div>
+                        <input id="dim-slider" class="ios-slider" type="range" min="0" max="75" value="15" />
+                    </div>
+                </div>
+
+                <!-- 4. TVAR IKON, MŘÍŽKA PLOCHY & 3D PŘECHODY -->
+                <div class="ios-section-label">MŘÍŽKA PLOCHY, TVAR IKON &amp; ANIMACE</div>
+                <div class="ios-grouped-card">
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-orange">❖</span>
+                                <span class="ios-cell-title">Tvar všech ikon</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="icon-shape-control">
+                            <button type="button" class="seg-btn active" data-shape="squircle">Squircle</button>
+                            <button type="button" class="seg-btn" data-shape="circle">Kruh</button>
+                            <button type="button" class="seg-btn" data-shape="teardrop">Kapka</button>
+                            <button type="button" class="seg-btn" data-shape="rounded_square">Čtverec</button>
+                            <button type="button" class="seg-btn" data-shape="hexagon">Hexagon</button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-blue">⊞</span>
+                                <span class="ios-cell-title">Hustota mřížky plochy</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="grid-size-control">
+                            <button type="button" class="seg-btn active" data-grid="4x6">4 × 6</button>
+                            <button type="button" class="seg-btn" data-grid="4x7">4 × 7</button>
+                            <button type="button" class="seg-btn" data-grid="5x6">5 × 6</button>
+                            <button type="button" class="seg-btn" data-grid="5x7">5 × 7</button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-green">🔍</span>
+                                <span class="ios-cell-title">Velikost ikon na ploše</span>
+                            </div>
+                            <span id="icon-scale-value" class="slider-value">100%</span>
+                        </div>
+                        <div class="ios-slider-with-icons">
+                            <span class="slider-end-icon">−</span>
+                            <input id="icon-scale-slider" class="ios-slider" type="range" min="80" max="118" value="100" />
+                            <span class="slider-end-icon">+</span>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-purple">🌀</span>
+                                <span class="ios-cell-title">Efekt přechodu mezi obrazovkami</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="page-transition-control">
+                            <button type="button" class="seg-btn active" data-trans="slide">Slide</button>
+                            <button type="button" class="seg-btn" data-trans="cube">3D Cube</button>
+                            <button type="button" class="seg-btn" data-trans="stack">Stack</button>
+                            <button type="button" class="seg-btn" data-trans="zoom">Zoom</button>
+                            <button type="button" class="seg-btn" data-trans="flip">Flip</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. KOMPLETNÍ CUSTOMIZACE DOCKU -->
+                <div class="ios-section-label">POKROČILÝ iOS GLASS DOCK</div>
+                <div class="ios-grouped-card">
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-blue">▬</span>
+                                <span class="ios-cell-title">Vizuální styl Docku</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="dock-style-control">
+                            <button type="button" class="seg-btn active" data-dock-style="pill">Glass Pill</button>
+                            <button type="button" class="seg-btn" data-dock-style="full">Edge-to-Edge</button>
+                            <button type="button" class="seg-btn" data-dock-style="neon">Neon</button>
+                            <button type="button" class="seg-btn" data-dock-style="minimal">Minimal</button>
+                            <button type="button" class="seg-btn" data-dock-style="hidden">Skrytý</button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-green">🔢</span>
+                                <span class="ios-cell-title">Počet pozic v Docku (3 až 7)</span>
+                            </div>
+                            <span id="dock-cols-value" class="slider-value">4</span>
+                        </div>
+                        <input id="dock-cols-slider" class="ios-slider" type="range" min="1" max="7" value="4" />
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-purple">📄</span>
+                                <span class="ios-cell-title">Počet stránek Docku (Swipe)</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="dock-pages-control">
+                            <button type="button" class="seg-btn active" data-dock-pages="1">1 stránka</button>
+                            <button type="button" class="seg-btn" data-dock-pages="2">2 stránky</button>
+                            <button type="button" class="seg-btn" data-dock-pages="3">3 stránky</button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-orange">↕</span>
+                                <span class="ios-cell-title">Výška, zaoblení a odsazení Docku</span>
+                            </div>
+                            <span id="dock-height-value" class="slider-value">84px</span>
+                        </div>
+                        <input id="dock-height-slider" class="ios-slider" type="range" min="64" max="110" value="84" />
+                        <div class="slider-header" style="margin-top:6px;">
+                            <span class="ios-cell-subtitle">Spodní odsazení</span>
+                            <span id="dock-margin-value" class="slider-value">4px</span>
+                        </div>
+                        <input id="dock-margin-slider" class="ios-slider" type="range" min="0" max="36" value="4" />
+                        <div class="slider-header" style="margin-top:6px;">
+                            <span class="ios-cell-subtitle">Zaoblení rohů Docku</span>
+                            <span id="dock-radius-value" class="slider-value">32px</span>
+                        </div>
+                        <input id="dock-radius-slider" class="ios-slider" type="range" min="0" max="48" value="32" />
+                        <div class="slider-header" style="margin-top:6px;">
+                            <span class="ios-cell-subtitle">Rozostření skla Docku</span>
+                            <span id="dock-blur-value" class="slider-value">28px</span>
+                        </div>
+                        <input id="dock-blur-slider" class="ios-slider" type="range" min="0" max="48" value="28" />
+                        <div class="slider-header" style="margin-top:6px;">
+                            <span class="ios-cell-subtitle">Měřítko ikon v Docku</span>
+                            <span id="dock-icon-scale-value" class="slider-value">100%</span>
+                        </div>
+                        <input id="dock-icon-scale-slider" class="ios-slider" type="range" min="75" max="125" value="100" />
+                    </div>
+
+                    <div class="ios-cell">
+                        <div class="ios-cell-left">
+                            <span class="ios-squircle-icon squircle-cyan">🏷</span>
+                            <div class="ios-cell-text">
+                                <span class="ios-cell-title">Zobrazovat popisky v Docku</span>
+                                <span class="ios-cell-subtitle">Názvy aplikací a složek ve spodním Docku</span>
+                            </div>
+                        </div>
+                        <input id="toggle-dock-labels" type="checkbox" class="ios-switch" />
+                    </div>
+                </div>
+
+                <!-- 6. APP DRAWER LAYOUT & POPISKY / ODZNAKY -->
+                <div class="ios-section-label">APP DRAWER, POPISKY &amp; NOTIFIKACE</div>
+                <div class="ios-grouped-card">
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-indigo">📚</span>
+                                <span class="ios-cell-title">Výchozí Layout App Draweru</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="drawer-layout-control">
+                            <button type="button" class="seg-btn active" data-dlayout="grid">Grid</button>
+                            <button type="button" class="seg-btn" data-dlayout="library">iOS Library</button>
+                            <button type="button" class="seg-btn" data-dlayout="list">List</button>
+                            <button type="button" class="seg-btn" data-dlayout="paged">Paged</button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-blue">▤</span>
+                                <span class="ios-cell-title">Počet sloupců v mřížce App Draweru</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="drawer-cols-control">
+                            <button type="button" class="seg-btn" data-dcols="3">3 sloupce</button>
+                            <button type="button" class="seg-btn active" data-dcols="4">4 sloupce</button>
+                            <button type="button" class="seg-btn" data-dcols="5">5 sloupců</button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell">
+                        <div class="ios-cell-left">
+                            <span class="ios-squircle-icon squircle-green">🔤</span>
+                            <div class="ios-cell-text">
+                                <span class="ios-cell-title">Zobrazovat názvy aplikací na ploše</span>
+                                <span class="ios-cell-subtitle">Popisky pod ikonami a složkami</span>
+                            </div>
+                        </div>
+                        <input id="toggle-show-labels" type="checkbox" class="ios-switch" checked />
+                    </div>
+
+                    <div class="ios-cell">
+                        <div class="ios-cell-left">
+                            <span class="ios-squircle-icon squircle-orange">🌑</span>
+                            <div class="ios-cell-text">
+                                <span class="ios-cell-title">Stín pod popisky ikon</span>
+                                <span class="ios-cell-subtitle">Zvýrazní čitelnost na světlých tapetách</span>
+                            </div>
+                        </div>
+                        <input id="toggle-label-shadow" type="checkbox" class="ios-switch" checked />
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-pink">A</span>
+                                <span class="ios-cell-title">Velikost a tloušťka písma popisků</span>
+                            </div>
+                            <span id="label-size-value" class="slider-value">11.5px</span>
+                        </div>
+                        <input id="label-size-slider" class="ios-slider" type="range" min="9" max="15" step="0.5" value="11.5" />
+                        <div class="segmented-control" id="label-weight-control" style="margin-top:6px;">
+                            <button type="button" class="seg-btn" data-weight="400">Normální</button>
+                            <button type="button" class="seg-btn active" data-weight="500">Střední</button>
+                            <button type="button" class="seg-btn" data-weight="700">Tučné</button>
+                        </div>
+                        <div class="color-swatch-row" id="label-color-swatches" style="margin-top:8px;">
+                            <button type="button" class="color-swatch active" data-color="#FFFFFF" style="background:#FFFFFF;"></button>
+                            <button type="button" class="color-swatch" data-color="#E2E8F0" style="background:#E2E8F0;"></button>
+                            <button type="button" class="color-swatch" data-color="#64D2FF" style="background:#64D2FF;"></button>
+                            <button type="button" class="color-swatch" data-color="#FFD60A" style="background:#FFD60A;"></button>
+                            <button type="button" class="color-swatch" data-color="#30D158" style="background:#30D158;"></button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell">
+                        <div class="ios-cell-left">
+                            <span class="ios-squircle-icon squircle-red">🔴</span>
+                            <div class="ios-cell-text">
+                                <span class="ios-cell-title">Notifikační odznaky (Badges)</span>
+                                <span id="badge-permission-status" class="ios-cell-subtitle">Počet aktivních oznámení u ikon</span>
+                            </div>
+                        </div>
+                        <div class="toggle-actions">
+                            <button id="btn-grant-badges" class="ios-chevron-btn hidden" type="button">Povolit ›</button>
+                            <input id="toggle-show-badges" type="checkbox" class="ios-switch" checked />
+                        </div>
+                    </div>
+
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-red">①</span>
+                                <span class="ios-cell-title">Styl, pozice a barva odznaků</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="badge-style-control">
+                            <button type="button" class="seg-btn active" data-bstyle="number">Čísla</button>
+                            <button type="button" class="seg-btn" data-bstyle="dot">Tečka</button>
+                        </div>
+                        <div class="segmented-control" id="badge-pos-control" style="margin-top:6px;">
+                            <button type="button" class="seg-btn active" data-bpos="top-right">Vpravo nahoře</button>
+                            <button type="button" class="seg-btn" data-bpos="top-left">Vlevo nahoře</button>
+                        </div>
+                        <div class="color-swatch-row" id="badge-color-swatches" style="margin-top:8px;">
+                            <button type="button" class="color-swatch active" data-color="#FF453A" style="background:#FF453A;"></button>
+                            <button type="button" class="color-swatch" data-color="#0A84FF" style="background:#0A84FF;"></button>
+                            <button type="button" class="color-swatch" data-color="#30D158" style="background:#30D158;"></button>
+                            <button type="button" class="color-swatch" data-color="#BF5AF2" style="background:#BF5AF2;"></button>
+                            <button type="button" class="color-swatch" data-color="#FF9F0A" style="background:#FF9F0A;"></button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. GESTA & ZÁLOHA STAVU V3 -->
+                <div class="ios-section-label">GESTA, ZÁMEK PLOCHY &amp; ZÁLOHA</div>
+                <div class="ios-grouped-card">
+                    <div class="ios-cell ios-cell-column">
+                        <div class="ios-cell-top">
+                            <div class="ios-cell-left">
+                                <span class="ios-squircle-icon squircle-purple">👆</span>
+                                <span class="ios-cell-title">Dvojklik na prázdné místo plochy</span>
+                            </div>
+                        </div>
+                        <div class="segmented-control" id="double-tap-control">
+                            <button type="button" class="seg-btn active" data-dt="none">Vypnuto</button>
+                            <button type="button" class="seg-btn" data-dt="aod">Klidový displej</button>
+                            <button type="button" class="seg-btn" data-dt="drawer">App Drawer</button>
+                        </div>
+                    </div>
+
+                    <div class="ios-cell">
+                        <div class="ios-cell-left">
+                            <span class="ios-squircle-icon squircle-orange">🔒</span>
+                            <div class="ios-cell-text">
+                                <span class="ios-cell-title">Zamknout rozložení plochy</span>
+                                <span class="ios-cell-subtitle">Zabrání nechtěnému přesunutí nebo smazání ikon</span>
+                            </div>
+                        </div>
+                        <input id="toggle-lock-layout" type="checkbox" class="ios-switch" />
+                    </div>
+
+                    <div class="ios-cell ios-cell-actions">
+                        <button id="btn-export-backup" class="secondary-action-btn" type="button">Exportovat V3 JSON</button>
+                        <button id="btn-import-backup" class="secondary-action-btn" type="button">Importovat JSON</button>
+                        <input id="backup-file-input" type="file" accept="application/json,.json" class="hidden" />
+                    </div>
+
+                    <div class="ios-cell ios-cell-actions">
+                        <button id="btn-reset-default-layout" class="danger-outline-btn" type="button">
+                            Obnovit výchozí V3 uspořádání plochy
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Klidový Always-On Display (AOD) překryv -->
+    <div id="aod-overlay" class="aod-overlay hidden" role="button" tabindex="0" aria-label="Klidový displej, klepnutím probudíte">
+        <div class="aod-content">
+            <div id="aod-time" class="aod-time">09:41</div>
+            <div id="aod-date" class="aod-date">Středa 21. října</div>
+            <div id="aod-battery" class="aod-battery">⚡ 90 %</div>
+            <span class="aod-hint">Klepnutím kamkoliv obrazovku probudíte</span>
+        </div>
+    </div>
+
+    <!-- Plovoucí toast notifikace -->
+    <div id="launcher-toast" class="launcher-toast hidden" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>

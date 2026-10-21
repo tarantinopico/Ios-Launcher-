@@ -1,0 +1,6 @@
+{
+  "name": "iOS Hybrid Launcher",
+  "description": "Hybridní Android Launcher s iOS 18 Dark Mode rozhraním, přizpůsobitelnými widgety, složkami, App Drawerem a systémem témat.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

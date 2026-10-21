@@ -1,0 +1,3118 @@
+:root {
+    --safe-top: 28px;
+    --safe-bottom: 20px;
+    --grid-cols: 4;
+    --grid-rows: 6;
+    --drawer-cols: 4;
+    --accent-color: #0A84FF;
+    --glass-blur: 28px;
+    --blur-strength: 28px;
+    --glass-opacity: 0.62;
+    --icon-scale: 1;
+    --wp-dim: 0.15;
+    --label-size: 11.5px;
+    --label-weight: 500;
+    --label-color: #FFFFFF;
+    --label-shadow: 0 1px 4px rgba(0, 0, 0, 0.78);
+    --badge-bg: #FF453A;
+    --dock-cols: 4;
+    --dock-height: 84px;
+    --dock-margin: 4px;
+    --dock-radius: 32px;
+    --dock-blur: 28px;
+    --dock-icon-scale: 1;
+    --surface-border: rgba(255, 255, 255, 0.14);
+    --specular-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 12px 32px rgba(0, 0, 0, 0.45);
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(235, 235, 245, 0.68);
+    --danger-color: #FF453A;
+    --ios-green: #30D158;
+    --spring-easing: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #05070B;
+    color: var(--text-primary);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", Roboto, sans-serif;
+    touch-action: none;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ==========================================================================
+   1. ULTRA-GLASSMORPHISM & SPECULAR GLASS SURFACES (Smart Launcher 6.5 + iOS 18)
+   ========================================================================== */
+.acrylic-surface {
+    backdrop-filter: blur(var(--glass-blur, 28px)) saturate(190%) brightness(1.05);
+    -webkit-backdrop-filter: blur(var(--glass-blur, 28px)) saturate(190%) brightness(1.05);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: var(--specular-shadow);
+}
+
+/* Dynamické rozostření celé plochy pod otevřenými modaly ("Everything blurs when the focus is you") */
+.workspace-backdrop-blur {
+    position: fixed;
+    inset: 0;
+    z-index: 22;
+    pointer-events: none;
+    opacity: 0;
+    backdrop-filter: blur(0px) brightness(1);
+    -webkit-backdrop-filter: blur(0px) brightness(1);
+    background: rgba(4, 7, 14, 0.16);
+    transition:
+        opacity 0.36s var(--spring-easing),
+        backdrop-filter 0.38s var(--spring-easing),
+        -webkit-backdrop-filter 0.38s var(--spring-easing);
+}
+
+.workspace-backdrop-blur.active {
+    opacity: 1;
+    backdrop-filter: blur(42px) saturate(165%) brightness(0.72);
+    -webkit-backdrop-filter: blur(42px) saturate(165%) brightness(0.72);
+}
+
+body.workspace-blurred .launcher-app {
+    transform: scale(0.965);
+    filter: saturate(1.08);
+    transition: transform 0.38s var(--spring-easing), filter 0.38s var(--spring-easing);
+}
+
+/* ==========================================================================
+   2. TAPETY (6 PŘEDNASTAVENÝCH MESH GRADIENTŮ + VLASTNÍ Z GALERIE)
+   ========================================================================== */
+.wallpaper-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-image 0.45s var(--spring-easing), filter 0.45s var(--spring-easing);
+}
+
+.wallpaper-dim-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    background: rgba(0, 0, 0, var(--wp-dim));
+    pointer-events: none;
+    transition: background 0.3s ease;
+}
+
+.wallpaper-titanium-dark {
+    background-image:
+        radial-gradient(circle at 18% 20%, rgba(10, 132, 255, 0.44) 0%, transparent 48%),
+        radial-gradient(circle at 84% 26%, rgba(94, 92, 230, 0.38) 0%, transparent 52%),
+        radial-gradient(circle at 50% 82%, rgba(44, 62, 95, 0.56) 0%, transparent 58%),
+        linear-gradient(145deg, #07090E 0%, #101726 48%, #090C14 100%);
+}
+
+.wallpaper-midnight-aurora {
+    background-image:
+        radial-gradient(circle at 22% 18%, rgba(48, 209, 88, 0.36) 0%, transparent 48%),
+        radial-gradient(circle at 80% 30%, rgba(191, 90, 242, 0.46) 0%, transparent 52%),
+        radial-gradient(circle at 35% 80%, rgba(10, 132, 255, 0.42) 0%, transparent 55%),
+        linear-gradient(160deg, #040711 0%, #0D132A 50%, #070510 100%);
+}
+
+.wallpaper-deep-ocean {
+    background-image:
+        radial-gradient(circle at 20% 25%, rgba(0, 199, 190, 0.44) 0%, transparent 50%),
+        radial-gradient(circle at 75% 70%, rgba(10, 132, 255, 0.5) 0%, transparent 55%),
+        radial-gradient(circle at 60% 15%, rgba(20, 45, 95, 0.65) 0%, transparent 50%),
+        linear-gradient(150deg, #020813 0%, #061A33 54%, #020916 100%);
+}
+
+.wallpaper-cyberpunk-neon {
+    background-image:
+        radial-gradient(circle at 18% 25%, rgba(255, 55, 95, 0.46) 0%, transparent 48%),
+        radial-gradient(circle at 82% 28%, rgba(10, 132, 255, 0.46) 0%, transparent 50%),
+        radial-gradient(circle at 52% 80%, rgba(191, 90, 242, 0.44) 0%, transparent 55%),
+        linear-gradient(145deg, #0D0414 0%, #160B28 50%, #060919 100%);
+}
+
+.wallpaper-crimson-dusk {
+    background-image:
+        radial-gradient(circle at 25% 22%, rgba(255, 69, 58, 0.42) 0%, transparent 50%),
+        radial-gradient(circle at 78% 65%, rgba(255, 159, 10, 0.32) 0%, transparent 52%),
+        radial-gradient(circle at 40% 85%, rgba(120, 25, 45, 0.55) 0%, transparent 58%),
+        linear-gradient(155deg, #120508 0%, #240B12 52%, #0B0508 100%);
+}
+
+.wallpaper-emerald-glass {
+    background-image:
+        radial-gradient(circle at 24% 24%, rgba(48, 209, 88, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 78% 32%, rgba(100, 210, 255, 0.32) 0%, transparent 50%),
+        radial-gradient(circle at 50% 80%, rgba(16, 85, 65, 0.55) 0%, transparent 58%),
+        linear-gradient(150deg, #03100B 0%, #09221A 52%, #040E0C 100%);
+}
+
+/* ==========================================================================
+   3. HLAVNÍ ROZVRŽENÍ PLOCHY & iOS JIGGLE TOOLBAR (+ VLEVO, DONE VPRAVO)
+   ========================================================================== */
+.launcher-app {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: calc(var(--safe-top) + 6px);
+    padding-bottom: calc(var(--safe-bottom) + 8px);
+    transition: transform 0.38s var(--spring-easing), filter 0.38s var(--spring-easing);
+}
+
+.jiggle-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 16px 8px;
+    gap: 8px;
+    z-index: 20;
+    animation: fadeSlideDown 0.25s var(--spring-easing);
+}
+
+.jiggle-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.jiggle-floating-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 15px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(28, 30, 38, 0.72);
+    backdrop-filter: blur(26px) saturate(190%);
+    -webkit-backdrop-filter: blur(26px) saturate(190%);
+    box-shadow: var(--specular-shadow);
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.jiggle-plus-pill {
+    width: 38px;
+    padding: 0;
+    font-size: 21px;
+    font-weight: 500;
+}
+
+.jiggle-done-pill {
+    background: rgba(255, 255, 255, 0.22);
+    font-weight: 700;
+}
+
+.jiggle-floating-pill:active,
+.glass-pill-btn:active {
+    transform: scale(0.93);
+}
+
+.glass-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(22, 26, 36, 0.68);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    color: #FFFFFF;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pill-plus {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+/* Plovoucí menu po klepnutí na + v Jiggle Modu */
+.jiggle-add-popover {
+    position: absolute;
+    top: calc(var(--safe-top) + 48px);
+    left: 16px;
+    z-index: 35;
+    width: 235px;
+    border-radius: 22px;
+    background: rgba(22, 25, 34, 0.84);
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    animation: popScaleIn 0.22s var(--spring-easing);
+}
+
+.jiggle-pop-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 15px;
+    background: transparent;
+    color: #FFFFFF;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.jiggle-pop-item:active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.jiggle-pop-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.pop-icon-blue { background: #0A84FF; }
+.pop-icon-purple { background: #BF5AF2; }
+.pop-icon-green { background: #30D158; }
+.pop-icon-orange { background: #FF9F0A; }
+
+/* Aktivní Focus Banner na ploše */
+.focus-status-banner {
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    margin-bottom: 4px;
+    border-radius: 999px;
+    background: rgba(24, 26, 36, 0.72);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    font-size: 11.5px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.92);
+    z-index: 12;
+}
+
+.focus-status-change-btn {
+    border: none;
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--accent-color);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   4. STRÁNKOVACÍ VIEWPORT & 5 EFEKTŮ PŘECHODŮ (SLIDE, CUBE, STACK, ZOOM, FLIP)
+   ========================================================================== */
+.pages-viewport {
+    flex: 1;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    perspective: 1200px;
+}
+
+.pages-track {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    will-change: transform;
+    transform-style: preserve-3d;
+    transition: transform 0.38s var(--spring-easing);
+}
+
+.home-page {
+    min-width: 100%;
+    width: 100%;
+    height: 100%;
+    padding: 8px 16px 6px;
+    display: grid;
+    grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+    grid-template-rows: repeat(var(--grid-rows), minmax(0, 1fr));
+    gap: 10px 8px;
+    position: relative;
+    align-content: stretch;
+    justify-items: center;
+    align-items: center;
+    backface-visibility: hidden;
+    transition: transform 0.38s var(--spring-easing), opacity 0.38s var(--spring-easing);
+}
+
+.delete-page-pill {
+    position: absolute;
+    top: 2px;
+    right: 22px;
+    z-index: 15;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 69, 58, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   5. IKONY APLIKACÍ, 5 TVARŮ, POPISKY, ODZNAKY & DVOUVRSTVÝ SKLENĚNÝ PRSTENEC
+   ========================================================================== */
+.grid-item {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: transform 0.26s var(--spring-easing), opacity 0.2s ease;
+}
+
+.grid-item.dragging-source {
+    opacity: 0.28;
+    transform: scale(0.92);
+}
+
+/* Dvouvrstvý skleněný čtverec při podržení ikony nad jinou ikonou (tvorba složky) */
+.grid-item.folder-drop-target .icon-squircle,
+.grid-item.folder-drop-target .folder-1x1-box {
+    transform: scale(1.14);
+    box-shadow:
+        0 0 0 4px rgba(255, 255, 255, 0.32),
+        0 0 0 9px rgba(10, 132, 255, 0.38),
+        0 14px 30px rgba(0, 0, 0, 0.55);
+}
+
+.icon-squircle {
+    width: calc(58px * var(--icon-scale) * var(--item-scale, 1));
+    height: calc(58px * var(--icon-scale) * var(--item-scale, 1));
+    border-radius: 22.5%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--item-bg, rgba(22, 27, 38, 0.45));
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), 0 6px 16px rgba(0, 0, 0, 0.32);
+    border: 1px solid var(--item-border, rgba(255, 255, 255, 0.14));
+    transition: transform 0.22s var(--spring-easing), box-shadow 0.22s var(--spring-easing), border-radius 0.25s ease;
+}
+
+/* 5 globálních tvarů ikon */
+body[data-icon-shape="squircle"] .icon-squircle {
+    border-radius: 22.5%;
+    clip-path: none;
+}
+
+body[data-icon-shape="circle"] .icon-squircle {
+    border-radius: 50%;
+    clip-path: none;
+}
+
+body[data-icon-shape="teardrop"] .icon-squircle {
+    border-radius: 50% 50% 14% 50%;
+    clip-path: none;
+}
+
+body[data-icon-shape="rounded_square"] .icon-squircle {
+    border-radius: 12px;
+    clip-path: none;
+}
+
+body[data-icon-shape="hexagon"] .icon-squircle {
+    border-radius: 0;
+    clip-path: polygon(25% 5%, 75% 5%, 98% 50%, 75% 95%, 25% 95%, 2% 50%);
+}
+
+.grid-item:active .icon-squircle {
+    transform: scale(0.9);
+}
+
+.app-icon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+    transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.custom-emoji-glyph {
+    font-size: calc(30px * var(--icon-scale) * var(--item-scale, 1));
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* iOS 18 Dark & Tinted Icon Modes */
+body[data-icon-style="dark"] .icon-squircle {
+    background: var(--item-bg, linear-gradient(145deg, #141821 0%, #0B0D13 100%));
+    border-color: var(--item-border, rgba(255, 255, 255, 0.16));
+}
+
+body[data-icon-style="dark"] .app-icon-img {
+    filter: brightness(0.86) contrast(1.16) saturate(0.92);
+    transform: scale(0.86);
+    border-radius: 20%;
+}
+
+body[data-icon-style="tinted"] .icon-squircle {
+    background: var(--item-bg, linear-gradient(145deg, #121620 0%, #090B10 100%));
+    border-color: var(--item-border, color-mix(in srgb, var(--accent-color) 42%, transparent));
+}
+
+body[data-icon-style="tinted"] .app-icon-img {
+    filter: url(#ios-tint-filter) brightness(1.08) contrast(1.15);
+    transform: scale(0.86);
+    border-radius: 20%;
+}
+
+.item-label {
+    max-width: 82px;
+    font-size: var(--label-size);
+    font-weight: var(--label-weight);
+    color: var(--label-color);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: var(--label-shadow);
+    line-height: 1.2;
+    pointer-events: none;
+}
+
+body.hide-app-labels .home-page .item-label {
+    display: none;
+}
+
+body:not(.show-dock-labels) .ios-dock .item-label {
+    display: none;
+}
+
+/* Notifikační odznaky (Badges) + Focus DND potlačení */
+.notification-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--badge-bg);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    border: 1.5px solid rgba(15, 18, 26, 0.9);
+    z-index: 6;
+    pointer-events: none;
+}
+
+body.badge-pos-left .notification-badge {
+    right: auto;
+    left: -4px;
+}
+
+body.badge-style-dot .notification-badge {
+    min-width: 12px;
+    width: 12px;
+    height: 12px;
+    padding: 0;
+    font-size: 0;
+    top: -2px;
+}
+
+body.hide-notification-badges .notification-badge,
+body[data-focus-mode="minimal"] .notification-badge {
+    display: none !important;
+}
+
+/* Skleněný odznak "−" v levém horním rohu v iOS Jiggle Modu */
+.jiggle-remove-btn {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    width: 23px;
+    height: 23px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    background: rgba(165, 170, 182, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: #111318;
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.42);
+    z-index: 8;
+    cursor: pointer;
+}
+
+body.jiggle-active .jiggle-remove-btn {
+    display: flex;
+}
+
+@keyframes jiggleKeyframes {
+    0%   { transform: rotate(-1.6deg) translateY(-0.5px); }
+    50%  { transform: rotate(1.6deg) translateY(0.5px); }
+    100% { transform: rotate(-1.6deg) translateY(-0.5px); }
+}
+
+body.jiggle-active .grid-item:nth-child(odd),
+body.jiggle-active .widget-card:nth-child(odd),
+body.jiggle-active .folder-expanded-card:nth-child(odd) {
+    animation: jiggleKeyframes 0.28s infinite ease-in-out;
+}
+
+body.jiggle-active .grid-item:nth-child(even),
+body.jiggle-active .widget-card:nth-child(even),
+body.jiggle-active .folder-expanded-card:nth-child(even) {
+    animation: jiggleKeyframes 0.29s infinite ease-in-out reverse;
+}
+
+/* ==========================================================================
+   6. REKURZIVNÍ SLOŽKY (1×1, 2×1, ENLARGED 2×2, 3×3) & SPECIÁLNÍ SLOŽKY
+   ========================================================================== */
+.folder-icon-box {
+    background: var(--item-bg, rgba(255, 255, 255, calc(var(--glass-opacity) * 0.36)));
+    backdrop-filter: blur(var(--glass-blur, 28px)) saturate(190%) brightness(1.05);
+    -webkit-backdrop-filter: blur(var(--glass-blur, 28px)) saturate(190%) brightness(1.05);
+    border: 1px solid var(--item-border, rgba(255, 255, 255, 0.18));
+    box-shadow: var(--specular-shadow);
+    padding: 7px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 3px;
+}
+
+.folder-mini-icon {
+    width: 100%;
+    height: 100%;
+    border-radius: 24%;
+    object-fit: cover;
+}
+
+.folder-mini-subfolder {
+    width: 100%;
+    height: 100%;
+    border-radius: 24%;
+    background: rgba(10, 132, 255, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+}
+
+.folder-mini-widget {
+    width: 100%;
+    height: 100%;
+    border-radius: 24%;
+    background: rgba(48, 209, 88, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+}
+
+.folder-kind-corner-tag {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(10, 14, 24, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    font-size: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+}
+
+/* Zvětšené složky na domovské obrazovce (Enlarged 2×2, 2×1, 3×3) */
+.folder-expanded-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 28px;
+    padding: 12px;
+    background: var(--item-bg, rgba(24, 28, 40, var(--glass-opacity)));
+    backdrop-filter: blur(var(--glass-blur, 28px)) saturate(190%) brightness(1.05);
+    -webkit-backdrop-filter: blur(var(--glass-blur, 28px)) saturate(190%) brightness(1.05);
+    border: 1px solid var(--item-border, rgba(255, 255, 255, 0.16));
+    box-shadow: var(--specular-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: visible;
+    transition: transform 0.25s var(--spring-easing), box-shadow 0.25s ease;
+}
+
+.folder-expanded-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    padding: 0 2px;
+    cursor: pointer;
+}
+
+.folder-expanded-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.94);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.folder-expanded-badge {
+    font-size: 10px;
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.folder-expanded-slots {
+    flex: 1;
+    display: grid;
+    gap: 9px;
+    align-items: center;
+    justify-items: center;
+}
+
+.folder-slots-2x1 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr;
+}
+
+/* Enlarged Folder 2×2: 3 velké ikony pro přímé spuštění + 4. pravý spodní kvadrant s mini-mřížkou 2×2 */
+.folder-slots-2x2 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+}
+
+.folder-slots-3x3 {
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+}
+
+.folder-direct-slot {
+    width: 100%;
+    height: 100%;
+    border-radius: 17px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.16s ease, background 0.2s ease;
+}
+
+.folder-direct-slot:active {
+    transform: scale(0.9);
+    background: rgba(255, 255, 255, 0.18);
+}
+
+.folder-direct-slot img {
+    width: 80%;
+    height: 80%;
+    border-radius: 22%;
+    object-fit: cover;
+}
+
+.folder-more-slot {
+    background: rgba(10, 132, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 5px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 3px;
+}
+
+.folder-more-mini {
+    width: 100%;
+    height: 100%;
+    border-radius: 4px;
+    object-fit: cover;
+    background: rgba(255, 255, 255, 0.24);
+}
+
+/* Uzamčený povrch PIN Trezoru (Vault Folder) */
+.folder-vault-locked-surface {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 18px;
+    background: rgba(10, 14, 24, 0.58);
+    border: 1px dashed rgba(255, 255, 255, 0.22);
+    cursor: pointer;
+}
+
+.folder-vault-lock-glyph {
+    font-size: 26px;
+}
+
+.folder-vault-lock-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   7. PRO WIDGET SUITE V3 (WEATHER, CALENDAR & AGENDA, CLOCK, RINGS, MEDIA)
+   ========================================================================== */
+.widget-card {
+    width: 100%;
+    height: 100%;
+    border-radius: 26px;
+    padding: 14px;
+    position: relative;
+    background: rgba(16, 21, 32, var(--glass-opacity));
+    backdrop-filter: blur(var(--glass-blur, 28px)) saturate(190%) brightness(1.05);
+    -webkit-backdrop-filter: blur(var(--glass-blur, 28px)) saturate(190%) brightness(1.05);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: var(--specular-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    transition: transform 0.25s var(--spring-easing), box-shadow 0.25s ease;
+}
+
+.widget-edit-gear {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(10, 132, 255, 0.88);
+    color: #FFFFFF;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9;
+    cursor: pointer;
+}
+
+body.jiggle-active .widget-edit-gear {
+    display: flex;
+}
+
+body.jiggle-active .widget-card > .jiggle-remove-btn,
+body.jiggle-active .folder-expanded-card > .jiggle-remove-btn {
+    top: 8px;
+    left: 8px;
+}
+
+/* 7.1 Acrylic Weather & Environment Widget */
+.weather-widget-body {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.weather-top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.weather-city-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.weather-big-temp {
+    font-size: 36px;
+    font-weight: 300;
+    line-height: 1.02;
+    letter-spacing: -1.5px;
+    color: #FFFFFF;
+}
+
+.weather-svg-wrap {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+}
+
+.weather-bottom-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.weather-condition-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.weather-hl-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.weather-wide-layout {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 12px;
+    height: 100%;
+    align-items: center;
+}
+
+.weather-hourly-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    padding: 8px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.weather-hour-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 10.5px;
+}
+
+.weather-hour-time {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.weather-hour-temp {
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+/* 7.2 iOS 17 Calendar & Agenda Glass Widget */
+.calendar-widget-2x2 {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.cal-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cal-month-title {
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #FF453A;
+}
+
+.cal-add-event-mini-btn {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.14);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.cal-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    text-align: center;
+    font-size: 9.5px;
+    font-weight: 600;
+}
+
+.cal-dow-cell {
+    color: rgba(235, 235, 245, 0.45);
+    font-size: 8.5px;
+    font-weight: 700;
+}
+
+.cal-day-cell {
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.cal-day-cell.today {
+    background: #FF453A;
+    color: #FFFFFF;
+    font-weight: 800;
+}
+
+.calendar-widget-4x2 {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 12px;
+    height: 100%;
+}
+
+.cal-agenda-pane {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    padding-left: 10px;
+    overflow: hidden;
+}
+
+.cal-agenda-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.cal-agenda-items {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow-y: auto;
+}
+
+.cal-agenda-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 7px;
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.cal-agenda-bar {
+    width: 3px;
+    height: 22px;
+    border-radius: 99px;
+    flex-shrink: 0;
+}
+
+.cal-agenda-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cal-agenda-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #FFFFFF;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cal-agenda-time {
+    font-size: 9.5px;
+    color: var(--text-secondary);
+}
+
+/* 7.3 Pro Clock & World Time Widget */
+.clock-digital-time {
+    font-size: 34px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.05;
+}
+
+.clock-digital-sec {
+    font-size: 14px;
+    font-weight: 600;
+    opacity: 0.75;
+    margin-left: 3px;
+}
+
+.clock-date-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: capitalize;
+}
+
+.analog-clock-wrap {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.analog-clock-svg {
+    width: 106px;
+    height: 106px;
+}
+
+.world-clock-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    height: 100%;
+    align-items: center;
+}
+
+.world-city-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 4px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.world-city-name {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.world-city-time {
+    font-size: 15px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.world-city-offset {
+    font-size: 9.5px;
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* 7.4 Battery & System Activity Rings Widget */
+.rings-widget-layout {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.rings-svg-box {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rings-center-label {
+    position: absolute;
+    font-size: 12px;
+    font-weight: 800;
+    color: #FFFFFF;
+}
+
+.rings-metrics-col {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    min-width: 0;
+}
+
+.ring-stat-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    font-size: 11px;
+}
+
+.ring-dot-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.ring-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+}
+
+.ring-stat-val {
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+/* 7.5 Glass Music / Media Controller Widget */
+.media-widget-layout {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.media-top-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.media-art-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    background: linear-gradient(135deg, #0A84FF 0%, #BF5AF2 55%, #FF375F 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+    flex-shrink: 0;
+}
+
+.media-track-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.media-track-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.media-track-artist {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.media-progress-bar {
+    width: 100%;
+    height: 4px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+}
+
+.media-progress-fill {
+    height: 100%;
+    width: 62%;
+    border-radius: 99px;
+    background: var(--accent-color);
+    transition: width 0.35s ease;
+}
+
+.media-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.media-ctrl-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.media-ctrl-play {
+    width: 36px;
+    height: 36px;
+    background: var(--accent-color);
+    font-size: 14px;
+}
+
+.media-ctrl-btn:active {
+    transform: scale(0.88);
+}
+
+/* ==========================================================================
+   8. PAGINATION BAR & SMART LAUNCHER 6.5 WIDE SEARCH BAR NAD DOCKEM
+   ========================================================================== */
+.pagination-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 2px 16px 6px;
+    z-index: 5;
+}
+
+.page-dots {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(20, 24, 34, 0.42);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.page-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.32);
+    transition: all 0.25s var(--spring-easing);
+    cursor: pointer;
+}
+
+.page-dot.active {
+    width: 18px;
+    border-radius: 999px;
+    background: #FFFFFF;
+}
+
+.search-pill-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 13px;
+    border-radius: 999px;
+    background: rgba(24, 28, 40, 0.62);
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.smart-search-wide-bar {
+    width: 100%;
+    max-width: 430px;
+    height: 44px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(22, 26, 38, calc(var(--glass-opacity) * 0.95));
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: transform 0.18s var(--spring-easing), background 0.22s ease;
+}
+
+.smart-search-wide-bar:active {
+    transform: scale(0.97);
+}
+
+.smart-search-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.smart-search-lens {
+    color: var(--accent-color);
+}
+
+.smart-search-placeholder {
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(235, 235, 245, 0.78);
+}
+
+.smart-search-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.smart-search-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+.smart-search-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   9. VÍCESTRÁNKOVÝ iOS GLASS DOCK (5 STYLŮ, 1–7 SLOUPCŮ, 1–3 STRÁNKY)
+   ========================================================================== */
+.dock-wrapper {
+    width: 100%;
+    padding: 0 14px;
+    margin-bottom: var(--dock-margin);
+    display: flex;
+    justify-content: center;
+    z-index: 6;
+    transition: all 0.3s var(--spring-easing);
+}
+
+body[data-dock-style="hidden"] .dock-wrapper {
+    display: none !important;
+}
+
+.ios-dock {
+    width: 100%;
+    max-width: 440px;
+    min-height: var(--dock-height);
+    padding: 10px 12px;
+    border-radius: var(--dock-radius);
+    background: rgba(24, 28, 40, var(--glass-opacity));
+    backdrop-filter: blur(var(--dock-blur)) saturate(195%) brightness(1.05);
+    -webkit-backdrop-filter: blur(var(--dock-blur)) saturate(195%) brightness(1.05);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    box-shadow: var(--specular-shadow);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    overflow: hidden;
+    transition: all 0.3s var(--spring-easing);
+}
+
+body[data-dock-style="full"] .dock-wrapper {
+    padding: 0;
+}
+
+body[data-dock-style="full"] .ios-dock {
+    max-width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+}
+
+body[data-dock-style="neon"] .ios-dock {
+    border: 1.5px solid var(--accent-color);
+    box-shadow: 0 0 24px color-mix(in srgb, var(--accent-color) 48%, transparent), 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+body[data-dock-style="minimal"] .ios-dock {
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+.ios-dock-viewport {
+    width: 100%;
+    overflow: hidden;
+}
+
+.ios-dock-track {
+    display: flex;
+    width: 100%;
+    transition: transform 0.32s var(--spring-easing);
+}
+
+.dock-page {
+    min-width: 100%;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(var(--dock-cols), minmax(0, 1fr));
+    align-items: center;
+    justify-items: center;
+    gap: 6px;
+}
+
+.ios-dock .icon-squircle {
+    width: calc(56px * var(--dock-icon-scale) * var(--item-scale, 1));
+    height: calc(56px * var(--dock-icon-scale) * var(--item-scale, 1));
+}
+
+.dock-page-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.dock-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.32);
+}
+
+.dock-dot.active {
+    background: var(--accent-color);
+    width: 12px;
+    border-radius: 99px;
+}
+
+/* ==========================================================================
+   10. APP DRAWER V3 (4 LAYOUTY + VYHLEDÁVÁNÍ SOUBORŮ A WEBU)
+   ========================================================================== */
+.app-drawer {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    padding-top: calc(var(--safe-top) + 8px);
+    padding-bottom: calc(var(--safe-bottom) + 12px);
+    background: rgba(8, 11, 18, 0.78);
+    backdrop-filter: blur(40px) saturate(190%);
+    -webkit-backdrop-filter: blur(40px) saturate(190%);
+    display: flex;
+    flex-direction: column;
+    animation: drawerSlideUp 0.32s var(--spring-easing);
+}
+
+@keyframes drawerSlideUp {
+    from { opacity: 0; transform: translateY(44px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.drawer-header {
+    padding: 0 16px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 9px;
+}
+
+.drawer-handle-bar {
+    width: 40px;
+    height: 5px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.drawer-search-box {
+    width: 100%;
+    height: 44px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    gap: 8px;
+}
+
+.search-icon {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+#drawer-search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #FFFFFF;
+    font-size: 15px;
+}
+
+#drawer-search-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.icon-clear-btn,
+.drawer-settings-btn {
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 20px;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drawer-layout-bar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.drawer-layout-pill {
+    padding: 6px 4px;
+    border-radius: 11px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.drawer-layout-pill.active {
+    background: var(--accent-color);
+    color: #FFFFFF;
+    border-color: transparent;
+}
+
+/* Filtry kategorií souborů v App Draweru */
+.drawer-file-filter-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.drawer-file-filter-bar::-webkit-scrollbar {
+    display: none;
+}
+
+.file-filter-chip {
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.file-filter-chip.active {
+    background: rgba(10, 132, 255, 0.28);
+    border-color: var(--accent-color);
+    color: #FFFFFF;
+}
+
+.drawer-body {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+}
+
+.drawer-scroll-container {
+    flex: 1;
+    height: 100%;
+    overflow-y: auto;
+    padding: 4px 30px 32px 16px;
+    touch-action: pan-y;
+}
+
+.drawer-letter-group {
+    margin-bottom: 18px;
+}
+
+.drawer-letter-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-color);
+    margin-bottom: 10px;
+    padding-left: 6px;
+}
+
+.drawer-apps-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--drawer-cols), minmax(0, 1fr));
+    gap: 14px 8px;
+}
+
+/* Layout 2: iOS App Library (Chytré kategorie) */
+.library-categories-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.library-category-card {
+    border-radius: 26px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: var(--specular-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.library-cat-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+.library-cat-items {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    justify-items: center;
+}
+
+/* Layout 3: Minimalistický Seznam */
+.drawer-minimal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.drawer-list-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+}
+
+.drawer-list-row:active {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.drawer-list-row img {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+    object-fit: cover;
+}
+
+.drawer-list-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #FFFFFF;
+    flex: 1;
+}
+
+/* Layout 4: Horizontální Stránky v App Draweru */
+.drawer-paged-wrapper {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 14px;
+    padding-bottom: 12px;
+}
+
+.drawer-paged-page {
+    min-width: 100%;
+    scroll-snap-align: start;
+    display: grid;
+    grid-template-columns: repeat(var(--drawer-cols), minmax(0, 1fr));
+    gap: 16px 8px;
+}
+
+/* Výsledky vyhledávání souborů a webu v App Draweru */
+.drawer-files-section {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.drawer-files-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.drawer-files-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.drawer-files-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-result-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.file-cat-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: rgba(10, 132, 255, 0.2);
+    border: 1px solid rgba(10, 132, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.file-result-meta {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-result-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #FFFFFF;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-result-sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-result-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.glass-mini-btn {
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.accent-mini-btn {
+    background: var(--accent-color);
+    border-color: transparent;
+}
+
+.drawer-web-search-box {
+    margin-top: 14px;
+}
+
+.web-search-action-card {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #FFFFFF;
+    text-align: left;
+    cursor: pointer;
+}
+
+.web-search-globe {
+    font-size: 22px;
+}
+
+.web-search-copy {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.web-search-copy strong {
+    font-size: 14px;
+}
+
+.web-search-copy span {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+}
+
+.web-search-arrow {
+    font-size: 20px;
+    color: var(--accent-color);
+}
+
+.az-index-bar {
+    position: absolute;
+    right: 4px;
+    top: 8px;
+    bottom: 16px;
+    width: 22px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    z-index: 5;
+}
+
+.az-letter {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    width: 20px;
+    text-align: center;
+    line-height: 1.25;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   11. REKURZIVNÍ MODAL SLOŽKY, DROBEČKOVÁ NAVIGACE & iOS QUICK ACTION POPOVER
+   ========================================================================== */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(4, 6, 12, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 18px;
+    animation: fadeIn 0.22s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes popScaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+.folder-modal-outer {
+    width: 100%;
+    max-width: 385px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: popScaleIn 0.26s var(--spring-easing);
+}
+
+.folder-hero-title-wrap {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.folder-title-pill-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+}
+
+.folder-title-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #FFFFFF;
+    font-size: 22px;
+    font-weight: 700;
+    text-align: center;
+    max-width: 230px;
+}
+
+.folder-title-clear-btn {
+    border: none;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 17px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.folder-kind-badge {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(10, 132, 255, 0.22);
+    border: 1px solid rgba(10, 132, 255, 0.45);
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #64D2FF;
+}
+
+.folder-breadcrumbs {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.breadcrumb-pill {
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.breadcrumb-pill.active {
+    background: var(--accent-color);
+    color: #FFFFFF;
+    border-color: transparent;
+}
+
+.breadcrumb-sep {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 12px;
+}
+
+.folder-card {
+    width: 100%;
+    max-height: 72vh;
+    border-radius: 34px;
+    padding: 16px 14px 18px;
+    background: rgba(24, 28, 40, 0.72);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    overflow: hidden;
+}
+
+.folder-action-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.folder-action-pill {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.folder-action-pill.accent-pill {
+    background: rgba(10, 132, 255, 0.26);
+    border-color: var(--accent-color);
+}
+
+.folder-pages-viewport {
+    flex: 1;
+    overflow-y: auto;
+    padding: 4px 2px;
+}
+
+.folder-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px 10px;
+    justify-items: center;
+    align-items: center;
+}
+
+.folder-pagination-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* iOS Quick Action Popover Card */
+.quick-action-card {
+    width: 100%;
+    max-width: 286px;
+    border-radius: 24px;
+    background: rgba(28, 32, 44, 0.84);
+    overflow: hidden;
+    animation: popScaleIn 0.22s var(--spring-easing);
+}
+
+.quick-action-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.qa-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 13px;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.qa-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.qa-emoji {
+    font-size: 24px;
+}
+
+.qa-titles {
+    min-width: 0;
+}
+
+.qa-titles h3 {
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.qa-titles span {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.qa-folder-size-box {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.qa-section-caption {
+    display: block;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.qa-size-pills {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+}
+
+.qa-size-pill {
+    padding: 6px 2px;
+    border-radius: 9px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.06);
+    color: #FFFFFF;
+    font-size: 10.5px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.qa-size-pill.active {
+    background: var(--accent-color);
+    border-color: transparent;
+}
+
+.quick-action-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.qa-item {
+    width: 100%;
+    padding: 13px 16px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.qa-item:last-child {
+    border-bottom: none;
+}
+
+.qa-item:active {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.qa-item-glyph {
+    font-size: 15px;
+    opacity: 0.85;
+}
+
+.qa-warn,
+.qa-danger {
+    color: var(--danger-color);
+}
+
+/* ==========================================================================
+   12. PROFESIONÁLNÍ iOS 18 DARK MODE SETTINGS & FOCUS CENTER (OLED #000000)
+   ========================================================================== */
+.ios-settings-sheet {
+    width: 100%;
+    max-width: 480px;
+    height: 90vh;
+    background: #000000;
+    border-radius: 34px;
+    border: 1px solid #2C2C2E;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.88);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: popScaleIn 0.26s var(--spring-easing);
+}
+
+.ios-settings-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: rgba(28, 28, 30, 0.88);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-bottom: 1px solid #2C2C2E;
+}
+
+.ios-nav-title {
+    font-size: 16.5px;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.ios-nav-btn {
+    border: none;
+    background: transparent;
+    color: #0A84FF;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.ios-nav-done {
+    font-weight: 700;
+}
+
+.ios-settings-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 16px 34px;
+    touch-action: pan-y;
+}
+
+.ios-section-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #8E8E93;
+    letter-spacing: 0.5px;
+    padding: 12px 12px 6px;
+    text-transform: uppercase;
+}
+
+/* Bento Focus Mode Cards (2 sloupce) */
+.focus-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.focus-bento-card {
+    border-radius: 20px;
+    padding: 13px;
+    background: #1C1C1E;
+    border: 1.5px solid #2C2C2E;
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s var(--spring-easing);
+}
+
+.focus-bento-wide {
+    grid-column: span 2;
+}
+
+.focus-bento-card.active {
+    background: rgba(10, 132, 255, 0.16);
+    border-color: #0A84FF;
+}
+
+.focus-bento-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.focus-bento-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+}
+
+.focus-bento-status {
+    font-size: 11px;
+    font-weight: 700;
+    color: #8E8E93;
+}
+
+.focus-bento-card.active .focus-bento-status {
+    color: #30D158;
+}
+
+.focus-bento-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.focus-bento-copy strong {
+    font-size: 14px;
+}
+
+.focus-bento-copy span {
+    font-size: 11px;
+    color: #8E8E93;
+    line-height: 1.3;
+}
+
+/* Seskupené iOS sekce (#1C1C1E) s oddělovači (#2C2C2E) */
+.ios-grouped-card {
+    background: #1C1C1E;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.ios-cell {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid #2C2C2E;
+    gap: 12px;
+}
+
+.ios-cell:last-child {
+    border-bottom: none;
+}
+
+.ios-cell-column {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 9px;
+}
+
+.ios-cell-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ios-cell-left {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+}
+
+.ios-cell-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.ios-cell-title {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: #FFFFFF;
+}
+
+.ios-cell-subtitle {
+    font-size: 11.5px;
+    color: #8E8E93;
+}
+
+/* Barevné iOS Settings squircle ikony vlevo */
+.ios-squircle-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #FFFFFF;
+    flex-shrink: 0;
+}
+
+.squircle-blue   { background: #0A84FF; }
+.squircle-purple { background: #BF5AF2; }
+.squircle-green  { background: #30D158; }
+.squircle-orange { background: #FF9F0A; }
+.squircle-red    { background: #FF453A; }
+.squircle-cyan   { background: #64D2FF; color: #05101A; }
+.squircle-pink   { background: #FF375F; }
+.squircle-indigo { background: #5E5CE6; }
+
+.ios-chevron-btn,
+.ios-inline-link-btn {
+    border: none;
+    background: rgba(10, 132, 255, 0.16);
+    color: #0A84FF;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.ios-slider-with-icons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.slider-end-icon {
+    font-size: 13px;
+    color: #8E8E93;
+}
+
+.ios-cell-actions {
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Ostatní modální karty (Widget Studio, Per-Item Studio, PIN Vault) */
+.sheet-card {
+    width: 100%;
+    max-width: 440px;
+    max-height: 86vh;
+    overflow-y: auto;
+    border-radius: 30px;
+    padding: 20px 18px 24px;
+    background: rgba(18, 22, 32, 0.9);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    touch-action: pan-y;
+}
+
+.widget-catalog-card {
+    max-width: 460px;
+}
+
+.widget-picker-scroll {
+    max-height: 68vh;
+    overflow-y: auto;
+}
+
+.sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sheet-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.sheet-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+}
+
+.icon-close-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.12);
+    color: #FFFFFF;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.config-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.config-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ios-text-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 13px;
+    border-radius: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+    font-size: 14px;
+    outline: none;
+}
+
+.ios-text-input:focus {
+    border-color: var(--accent-color);
+}
+
+.weather-config-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.weather-unit-seg {
+    width: 110px;
+    flex-shrink: 0;
+}
+
+.widget-agenda-editor-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.agenda-edit-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.07);
+    font-size: 12.5px;
+}
+
+.agenda-del-btn {
+    border: none;
+    background: rgba(255, 69, 58, 0.22);
+    color: #FF453A;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.agenda-add-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.agenda-time-input {
+    width: 82px;
+    flex-shrink: 0;
+}
+
+.segmented-control {
+    display: flex;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 3px;
+    border-radius: 12px;
+    gap: 3px;
+    flex-wrap: wrap;
+}
+
+.seg-btn {
+    flex: 1;
+    min-width: 58px;
+    padding: 7px 6px;
+    border: none;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.seg-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.color-swatch-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.color-swatch {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.color-swatch.active {
+    transform: scale(1.16);
+    border-color: #FFFFFF;
+    box-shadow: 0 0 0 2px var(--accent-color);
+}
+
+.slider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.slider-value {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.ios-slider {
+    width: 100%;
+    accent-color: var(--accent-color);
+    height: 6px;
+    border-radius: 999px;
+}
+
+.wallpaper-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.wp-preset-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    border-radius: 14px;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+.wp-preset-item.active {
+    border-color: var(--accent-color);
+    background: rgba(10, 132, 255, 0.16);
+}
+
+.wp-thumb {
+    width: 100%;
+    height: 40px;
+    border-radius: 9px;
+    display: block;
+}
+
+.wp-label {
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.file-cat-checks-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ios-check-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* iOS zelený přepínač (#30D158) */
+.ios-switch {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 48px;
+    height: 28px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.22s ease;
+    flex-shrink: 0;
+}
+
+.ios-switch::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    transition: transform 0.22s var(--spring-easing);
+}
+
+.ios-switch:checked {
+    background: var(--ios-green);
+}
+
+.ios-switch:checked::after {
+    transform: translateX(20px);
+}
+
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+}
+
+.toggle-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.toggle-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.toggle-desc {
+    font-size: 11.5px;
+    color: var(--text-secondary);
+}
+
+.toggle-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Katalog widgetů v modalu */
+.widget-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.widget-preview-card {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 18px;
+    padding: 12px;
+    color: #FFFFFF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: transform 0.18s ease, background 0.2s ease;
+}
+
+.widget-preview-card:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.wp-visual {
+    width: 100%;
+    height: 68px;
+    border-radius: 13px;
+    background: rgba(10, 14, 24, 0.68);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+.wp-weather-temp,
+.wp-clock-time,
+.wp-battery-pct,
+.wp-cal-day,
+.wp-rings-glyph,
+.wp-media-icons {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.wp-cal-month {
+    font-size: 11px;
+    font-weight: 800;
+    color: #FF453A;
+}
+
+.wp-weather-sub,
+.wp-clock-date,
+.wp-battery-sub,
+.wp-cal-sub {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+}
+
+.wp-name {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Numerický PIN Trezor */
+.pin-vault-card {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 32px;
+    padding: 24px 20px;
+    background: rgba(18, 22, 34, 0.88);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.pin-vault-lock-icon {
+    font-size: 32px;
+}
+
+.pin-vault-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.pin-vault-card p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.pin-dots-row {
+    display: flex;
+    gap: 14px;
+    margin: 6px 0 10px;
+}
+
+.pin-dot {
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.15s ease;
+}
+
+.pin-dot.filled {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: scale(1.12);
+}
+
+.pin-keypad {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.pin-key {
+    height: 54px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+    font-size: 20px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pin-key:active {
+    background: rgba(255, 255, 255, 0.24);
+}
+
+.pin-key-cancel,
+.pin-key-back {
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.folder-app-picker-list {
+    max-height: 46vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.emoji-quick-picks {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+}
+
+.emoji-chip {
+    padding: 5px 10px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.07);
+    color: #FFFFFF;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.sheet-actions-row {
+    display: flex;
+    gap: 8px;
+}
+
+.primary-action-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 14px;
+    border: none;
+    background: var(--accent-color);
+    color: #FFFFFF;
+    font-size: 14.5px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.secondary-action-btn {
+    flex: 1;
+    padding: 11px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.08);
+    color: #FFFFFF;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.danger-outline-btn {
+    width: 100%;
+    padding: 11px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 69, 58, 0.45);
+    background: rgba(255, 69, 58, 0.12);
+    color: var(--danger-color);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   13. DRAG GHOST, KLIDOVÝ AOD DISPLEJ & TOAST OZNÁMENÍ
+   ========================================================================== */
+.drag-floating-ghost {
+    position: fixed;
+    z-index: 999;
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(1.14);
+    filter: drop-shadow(0 16px 28px rgba(0, 0, 0, 0.6));
+}
+
+.aod-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.aod-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.aod-time {
+    font-size: 68px;
+    font-weight: 200;
+    letter-spacing: -2px;
+    color: rgba(255, 255, 255, 0.86);
+}
+
+.aod-date {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.aod-battery {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #30D158;
+}
+
+.aod-hint {
+    margin-top: 36px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.launcher-toast {
+    position: fixed;
+    bottom: calc(var(--safe-bottom) + 106px);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 90;
+    padding: 9px 18px;
+    border-radius: 999px;
+    background: rgba(20, 24, 34, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #FFFFFF;
+    font-size: 12.5px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+    pointer-events: none;
+}
+
+@keyframes fadeSlideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
